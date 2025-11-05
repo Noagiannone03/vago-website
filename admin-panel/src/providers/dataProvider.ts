@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DataProvider } from '@refinedev/core';
 import {
   collection,

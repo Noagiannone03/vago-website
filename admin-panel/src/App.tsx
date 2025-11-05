@@ -6,6 +6,7 @@ import {
   useNotificationProvider,
 } from '@refinedev/mui';
 import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
 import routerBindings, {
   CatchAllNavigate,
   DocumentTitleHandler,
@@ -78,7 +79,8 @@ function App() {
             body: { backgroundColor: '#f5f7fa' },
           }}
         />
-        <Refine
+        <SnackbarProvider>
+          <Refine
           dataProvider={firestoreDataProvider}
           authProvider={authProvider}
           notificationProvider={useNotificationProvider}
@@ -199,6 +201,7 @@ function App() {
           <UnsavedChangesNotifier />
           <DocumentTitleHandler />
         </Refine>
+        </SnackbarProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

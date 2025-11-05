@@ -68,6 +68,135 @@ const theme = createTheme({
   },
 });
 
+// Wrapper component to use notification provider inside SnackbarProvider context
+const RefineApp = () => {
+  const notificationProvider = useNotificationProvider();
+
+  return (
+    <Refine
+      dataProvider={firestoreDataProvider}
+      authProvider={authProvider}
+      notificationProvider={notificationProvider}
+      routerProvider={routerBindings}
+      resources={[
+        {
+          name: 'dashboard',
+          list: '/',
+          meta: {
+            label: 'Dashboard',
+            icon: <DashboardIcon />,
+          },
+        },
+        {
+          name: 'trips',
+          list: '/trips',
+          create: '/trips/create',
+          edit: '/trips/edit/:id',
+          show: '/trips/show/:id',
+          meta: {
+            label: 'Trajets',
+            icon: <TripIcon />,
+            canDelete: true,
+          },
+        },
+        {
+          name: 'items',
+          list: '/items',
+          create: '/items/create',
+          edit: '/items/edit/:id',
+          show: '/items/show/:id',
+          meta: {
+            label: 'Articles',
+            icon: <ItemIcon />,
+            canDelete: true,
+          },
+        },
+        {
+          name: 'rewards',
+          list: '/rewards',
+          create: '/rewards/create',
+          edit: '/rewards/edit/:id',
+          show: '/rewards/show/:id',
+          meta: {
+            label: 'Récompenses',
+            icon: <RewardIcon />,
+            canDelete: true,
+          },
+        },
+        {
+          name: 'reward_claims',
+          list: '/claims',
+          show: '/claims/show/:id',
+          meta: {
+            label: 'Réclamations',
+            icon: <ClaimIcon />,
+          },
+        },
+        {
+          name: 'maintenance',
+          list: '/maintenance',
+          meta: {
+            label: 'Maintenance',
+            icon: <MaintenanceIcon />,
+          },
+        },
+      ]}
+      options={{
+        syncWithLocation: true,
+        warnWhenUnsavedChanges: true,
+      }}
+    >
+      <Routes>
+        <Route
+          element={
+            <ThemedLayout
+              Title={() => <ThemedTitle collapsed={false} text="Vago Admin" icon={<TripIcon />} />}
+            >
+              <Outlet />
+            </ThemedLayout>
+          }
+        >
+          <Route index element={<Dashboard />} />
+
+          {/* Trips */}
+          <Route path="/trips">
+            <Route index element={<TripList />} />
+            <Route path="create" element={<TripCreate />} />
+          </Route>
+
+          {/* Items */}
+          <Route path="/items">
+            <Route index element={<ItemList />} />
+          </Route>
+
+          {/* Rewards */}
+          <Route path="/rewards">
+            <Route index element={<RewardList />} />
+          </Route>
+
+          {/* Claims */}
+          <Route path="/claims">
+            <Route index element={<ClaimList />} />
+            <Route path="show/:id" element={<ClaimShow />} />
+          </Route>
+
+          {/* Maintenance */}
+          <Route path="/maintenance" element={<Maintenance />} />
+
+          <Route path="*" element={<ErrorComponent />} />
+        </Route>
+
+        <Route element={<CatchAllNavigate to="/login" />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+      </Routes>
+
+      <UnsavedChangesNotifier />
+      <DocumentTitleHandler />
+    </Refine>
+  );
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -80,127 +209,7 @@ function App() {
           }}
         />
         <SnackbarProvider>
-          <Refine
-          dataProvider={firestoreDataProvider}
-          authProvider={authProvider}
-          notificationProvider={useNotificationProvider}
-          routerProvider={routerBindings}
-          resources={[
-            {
-              name: 'dashboard',
-              list: '/',
-              meta: {
-                label: 'Dashboard',
-                icon: <DashboardIcon />,
-              },
-            },
-            {
-              name: 'trips',
-              list: '/trips',
-              create: '/trips/create',
-              edit: '/trips/edit/:id',
-              show: '/trips/show/:id',
-              meta: {
-                label: 'Trajets',
-                icon: <TripIcon />,
-                canDelete: true,
-              },
-            },
-            {
-              name: 'items',
-              list: '/items',
-              create: '/items/create',
-              edit: '/items/edit/:id',
-              show: '/items/show/:id',
-              meta: {
-                label: 'Articles',
-                icon: <ItemIcon />,
-                canDelete: true,
-              },
-            },
-            {
-              name: 'rewards',
-              list: '/rewards',
-              create: '/rewards/create',
-              edit: '/rewards/edit/:id',
-              show: '/rewards/show/:id',
-              meta: {
-                label: 'Récompenses',
-                icon: <RewardIcon />,
-                canDelete: true,
-              },
-            },
-            {
-              name: 'reward_claims',
-              list: '/claims',
-              show: '/claims/show/:id',
-              meta: {
-                label: 'Réclamations',
-                icon: <ClaimIcon />,
-              },
-            },
-            {
-              name: 'maintenance',
-              list: '/maintenance',
-              meta: {
-                label: 'Maintenance',
-                icon: <MaintenanceIcon />,
-              },
-            },
-          ]}
-          options={{
-            syncWithLocation: true,
-            warnWhenUnsavedChanges: true,
-          }}
-        >
-          <Routes>
-            <Route
-              element={
-                <ThemedLayout
-                  Title={() => <ThemedTitle collapsed={false} text="Vago Admin" icon={<TripIcon />} />}
-                >
-                  <Outlet />
-                </ThemedLayout>
-              }
-            >
-              <Route index element={<Dashboard />} />
-
-              {/* Trips */}
-              <Route path="/trips">
-                <Route index element={<TripList />} />
-                <Route path="create" element={<TripCreate />} />
-              </Route>
-
-              {/* Items */}
-              <Route path="/items">
-                <Route index element={<ItemList />} />
-              </Route>
-
-              {/* Rewards */}
-              <Route path="/rewards">
-                <Route index element={<RewardList />} />
-              </Route>
-
-              {/* Claims */}
-              <Route path="/claims">
-                <Route index element={<ClaimList />} />
-                <Route path="show/:id" element={<ClaimShow />} />
-              </Route>
-
-              {/* Maintenance */}
-              <Route path="/maintenance" element={<Maintenance />} />
-
-              <Route path="*" element={<ErrorComponent />} />
-            </Route>
-
-            <Route element={<CatchAllNavigate to="/login" />}>
-              <Route path="/login" element={<Login />} />
-            </Route>
-          </Routes>
-
-          <UnsavedChangesNotifier />
-          <DocumentTitleHandler />
-        </Refine>
+          <RefineApp />
         </SnackbarProvider>
       </ThemeProvider>
     </BrowserRouter>

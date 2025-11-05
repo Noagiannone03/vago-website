@@ -1,73 +1,186 @@
-# React + TypeScript + Vite
+# Vago Admin Panel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🚴 Modern, professional admin panel for the Vago application - built with the latest web technologies.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **🎨 Beautiful Design**: Modern UI with Tailwind CSS and custom components
+- **🔐 Secure Authentication**: Firebase authentication integration
+- **📊 Interactive Dashboard**: Real-time stats and charts
+- **🚀 Fast & Responsive**: Built with Vite and React for optimal performance
+- **💾 Data Management**: Full CRUD operations for all entities
+- **📱 Mobile Responsive**: Works seamlessly on all devices
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 18** - Modern React with hooks
+- **TypeScript** - Type-safe development
+- **Vite** - Lightning-fast build tool
+- **Tailwind CSS** - Utility-first CSS framework
+- **TanStack Query** - Powerful data fetching and caching
+- **React Router** - Client-side routing
+- **Firebase** - Backend services (Auth, Firestore, Storage)
+- **Recharts** - Beautiful charts and graphs
+- **Lucide React** - Modern icon library
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+
+- npm or yarn
+- Firebase project with Firestore and Authentication enabled
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository
+2. Navigate to the admin-panel directory
+3. Install dependencies:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+4. Create a `.env` file based on `.env.example`:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
+
+5. Fill in your Firebase credentials in the `.env` file:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+### Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`
+
+### Build
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+## 📂 Project Structure
+
+```
+admin-panel/
+├── src/
+│   ├── components/       # Reusable components
+│   │   ├── ui/          # UI components (Button, Card, etc.)
+│   │   ├── Layout.tsx   # Main layout wrapper
+│   │   └── Sidebar.tsx  # Navigation sidebar
+│   ├── config/          # Configuration files
+│   │   └── firebase.ts  # Firebase configuration
+│   ├── hooks/           # Custom React hooks
+│   │   └── useAuth.ts   # Authentication hook
+│   ├── lib/             # Utility functions
+│   │   └── utils.ts     # Helper functions
+│   ├── pages/           # Page components
+│   │   ├── DashboardPage.tsx
+│   │   ├── TripsPage.tsx
+│   │   ├── ItemsPage.tsx
+│   │   ├── RewardsPage.tsx
+│   │   ├── ClaimsPage.tsx
+│   │   ├── MaintenancePage.tsx
+│   │   └── LoginPage.tsx
+│   ├── App.tsx          # Main app component
+│   ├── main.tsx         # Entry point
+│   └── index.css        # Global styles
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── tailwind.config.js
+```
+
+## 🔐 Authentication
+
+The admin panel uses Firebase Authentication. To create an admin user:
+
+1. Go to your Firebase Console
+2. Navigate to Authentication > Users
+3. Add a new user with email and password
+4. Use these credentials to log in to the admin panel
+
+## 📊 Features Overview
+
+### Dashboard
+- Real-time statistics for trips, items, rewards, and claims
+- Interactive charts showing weekly activity and trends
+- Beautiful card-based layout
+
+### Trips Management
+- View all user trips
+- Filter and sort trips
+- Edit and delete trips
+- See trip details (distance, CO2 saved, points earned)
+
+### Items Management
+- Manage found items
+- View item locations on map
+- Update item status (available, claimed, removed)
+- Category-based organization
+
+### Rewards Management
+- Create and manage rewards
+- Set point costs
+- Toggle availability
+- Organize by category
+
+### Claims Management
+- Review reward claims
+- Approve or reject claims
+- Track claim status
+- View claim history
+
+### Maintenance
+- Database management tools
+- Data export/import
+- System statistics
+- Cleanup utilities
+
+## 🎨 Customization
+
+### Theme Colors
+
+Edit `src/index.css` to customize the color scheme:
+
+```css
+:root {
+  --primary: 262 83% 58%;  /* Purple */
+  /* Add more custom colors */
+}
+```
+
+### UI Components
+
+All UI components are located in `src/components/ui/` and can be customized to match your brand.
+
+## 📝 License
+
+This project is private and proprietary.
+
+## 🤝 Support
+
+For support, please contact the development team.

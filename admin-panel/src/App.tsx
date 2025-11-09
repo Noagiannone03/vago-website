@@ -5,7 +5,7 @@ import {
   ThemedTitle,
   useNotificationProvider,
 } from '@refinedev/mui';
-import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import routerBindings, {
   CatchAllNavigate,
@@ -25,6 +25,8 @@ import {
 
 import { firestoreDataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Header } from './components/layout/Header';
 
 // Pages
 import { Login } from './pages/login';
@@ -36,37 +38,6 @@ import { RewardList } from './pages/rewards/list';
 import { ClaimList } from './pages/claims/list';
 import { ClaimShow } from './pages/claims/show';
 import { Maintenance } from './pages/maintenance';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#667eea',
-    },
-    secondary: {
-      main: '#764ba2',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          borderRadius: 8,
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-        },
-      },
-    },
-  },
-});
 
 // Wrapper component to use notification provider inside SnackbarProvider context
 const RefineApp = () => {
@@ -151,6 +122,7 @@ const RefineApp = () => {
           element={
             <ThemedLayout
               Title={() => <ThemedTitle collapsed={false} text="Vago Admin" icon={<TripIcon />} />}
+              Header={Header}
             >
               <Outlet />
             </ThemedLayout>
@@ -200,12 +172,11 @@ const RefineApp = () => {
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider>
         <CssBaseline />
         <GlobalStyles
           styles={{
             html: { WebkitFontSmoothing: 'auto' },
-            body: { backgroundColor: '#f5f7fa' },
           }}
         />
         <SnackbarProvider>

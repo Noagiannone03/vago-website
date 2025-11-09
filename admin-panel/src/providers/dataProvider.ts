@@ -13,8 +13,11 @@ import {
   orderBy,
   limit,
   startAfter,
+  getCountFromServer,
   Timestamp,
   QueryConstraint,
+  DocumentData,
+  QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -24,13 +27,34 @@ export const firestoreDataProvider: DataProvider = {
     const constraints: QueryConstraint[] = [];
 
     // Handle filters
-    if (filters) {
+    if (filters && filters.length > 0) {
       filters.forEach((filter) => {
-        if (filter.operator === 'eq' && filter.value !== undefined) {
-          constraints.push(where(filter.field, '==', filter.value));
-        } else if (filter.operator === 'contains' && filter.value) {
-          // For text search, we'll do client-side filtering
-          // Firestore doesn't support full-text search natively
+        if ('field' in filter && filter.value !== undefined && filter.value !== '') {
+          switch (filter.operator) {
+            case 'eq':
+              constraints.push(where(filter.field, '==', filter.value));
+              break;
+            case 'ne':
+              constraints.push(where(filter.field, '!=', filter.value));
+              break;
+            case 'lt':
+              constraints.push(where(filter.field, '<', filter.value));
+              break;
+            case 'lte':
+              constraints.push(where(filter.field, '<=', filter.value));
+              break;
+            case 'gt':
+              constraints.push(where(filter.field, '>', filter.value));
+              break;
+            case 'gte':
+              constraints.push(where(filter.field, '>=', filter.value));
+              break;
+            case 'in':
+              if (Array.isArray(filter.value)) {
+                constraints.push(where(filter.field, 'in', filter.value));
+              }
+              break;
+          }
         }
       });
     }
@@ -46,11 +70,21 @@ export const firestoreDataProvider: DataProvider = {
     }
 
     // Handle pagination
+    const current = pagination?.current || 1;
     const pageSize = pagination?.pageSize || 10;
-    constraints.push(limit(pageSize));
 
+    if (pageSize) {
+      constraints.push(limit(pageSize));
+    }
+
+    // Build query
     const q = query(collectionRef, ...constraints);
     const querySnapshot = await getDocs(q);
+
+    // Get total count (approximate)
+    const countQuery = query(collectionRef);
+    const countSnapshot = await getCountFromServer(countQuery);
+    const total = countSnapshot.data().count;
 
     const data = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -59,7 +93,7 @@ export const firestoreDataProvider: DataProvider = {
 
     return {
       data,
-      total: data.length, // Note: Firestore doesn't provide total count easily
+      total,
     };
   },
 
@@ -84,6 +118,7 @@ export const firestoreDataProvider: DataProvider = {
     const data = {
       ...variables,
       createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
     };
 
     const docRef = await addDoc(collectionRef, data);
@@ -124,9 +159,14 @@ export const firestoreDataProvider: DataProvider = {
 
   getApiUrl: () => '',
 
-  // Optional methods for advanced features
+  // Optional method for many deletions
+  deleteMany: async ({ resource, ids }) => {
+    await Promise.all(ids.map((id) => deleteDoc(doc(db, resource, String(id)))));
+    return { data: ids.map((id) => ({ id })) };
+  },
+
+  // Custom method for advanced operations
   custom: async ({ url, method, payload }) => {
-    // Custom method for special operations
     return { data: {} };
   },
 };

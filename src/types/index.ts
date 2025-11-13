@@ -77,6 +77,8 @@ export interface RewardClaim {
 export interface AppSettings {
   id: string;
   maintenanceMode: boolean;
+  maintenanceDuration?: number; // Durée en minutes
+  maintenanceMessage?: string;
   welcomeMessage: string;
   minAppVersion: string;
   maxTripsPerDay: number;

@@ -25,6 +25,8 @@ export function Settings() {
   const form = useForm({
     initialValues: {
       maintenanceMode: false,
+      maintenanceDuration: 30,
+      maintenanceMessage: 'Maintenance en cours. Nous revenons bientôt !',
       welcomeMessage: 'Bienvenue sur Vago !',
       minAppVersion: '1.0.0',
       maxTripsPerDay: 10,
@@ -47,6 +49,8 @@ export function Settings() {
 
         form.setValues({
           maintenanceMode: settingsData.maintenanceMode || false,
+          maintenanceDuration: settingsData.maintenanceDuration || 30,
+          maintenanceMessage: settingsData.maintenanceMessage || 'Maintenance en cours. Nous revenons bientôt !',
           welcomeMessage: settingsData.welcomeMessage || 'Bienvenue sur Vago !',
           minAppVersion: settingsData.minAppVersion || '1.0.0',
           maxTripsPerDay: settingsData.maxTripsPerDay || 10,
@@ -71,6 +75,8 @@ export function Settings() {
 
       const settingsData = {
         maintenanceMode: values.maintenanceMode,
+        maintenanceDuration: values.maintenanceDuration,
+        maintenanceMessage: values.maintenanceMessage,
         welcomeMessage: values.welcomeMessage,
         minAppVersion: values.minAppVersion,
         maxTripsPerDay: values.maxTripsPerDay,
@@ -119,22 +125,47 @@ export function Settings() {
       <Paper shadow="sm" p="xl" radius="md" withBorder>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="lg">
-            <Group justify="space-between">
-              <div>
-                <Text fw={500} size="lg" mb={4}>
-                  Mode Maintenance
-                </Text>
-                <Text size="sm" c="dimmed">
-                  Activer ce mode empêchera les utilisateurs d'accéder à l'application
-                </Text>
-              </div>
-              <Switch
-                size="lg"
-                onLabel="ON"
-                offLabel="OFF"
-                {...form.getInputProps('maintenanceMode', { type: 'checkbox' })}
-              />
-            </Group>
+            <Paper p="md" withBorder style={{ background: form.values.maintenanceMode ? '#fff3cd' : undefined }}>
+              <Stack gap="md">
+                <Group justify="space-between">
+                  <div>
+                    <Text fw={500} size="lg" mb={4}>
+                      Mode Maintenance
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      Activer ce mode empêchera les utilisateurs d'accéder à l'application
+                    </Text>
+                  </div>
+                  <Switch
+                    size="lg"
+                    onLabel="ON"
+                    offLabel="OFF"
+                    {...form.getInputProps('maintenanceMode', { type: 'checkbox' })}
+                  />
+                </Group>
+
+                {form.values.maintenanceMode && (
+                  <Stack gap="md" mt="md">
+                    <NumberInput
+                      label="Durée de la maintenance (en minutes)"
+                      description="Durée estimée de la maintenance"
+                      placeholder="30"
+                      min={1}
+                      max={1440}
+                      {...form.getInputProps('maintenanceDuration')}
+                    />
+
+                    <Textarea
+                      label="Message de maintenance"
+                      description="Message affiché aux utilisateurs pendant la maintenance"
+                      placeholder="Maintenance en cours. Nous revenons bientôt !"
+                      minRows={2}
+                      {...form.getInputProps('maintenanceMessage')}
+                    />
+                  </Stack>
+                )}
+              </Stack>
+            </Paper>
 
             <Textarea
               label="Message de bienvenue"

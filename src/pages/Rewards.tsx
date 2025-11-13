@@ -58,7 +58,10 @@ export function Rewards() {
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate(),
       })) as Reward[];
-      setRewards(rewardsData);
+
+      // Trier par coût croissant (du moins cher au plus cher)
+      const sortedRewards = rewardsData.sort((a, b) => a.cost - b.cost);
+      setRewards(sortedRewards);
     } catch (error) {
       console.error('Error loading rewards:', error);
       notifications.show({
@@ -277,10 +280,47 @@ export function Rewards() {
           </Stack>
         </Paper>
       ) : (
-        <Grid>
-          {rewards.map((reward) => (
+        <Stack gap="md">
+          <Paper p="md" withBorder style={{ background: 'linear-gradient(135deg, #56ab2f 20%, #a8e063 100%)' }}>
+            <Group justify="space-between" align="center">
+              <div>
+                <Text c="white" fw={700} size="lg">
+                  📊 Catalogue des récompenses
+                </Text>
+                <Text c="white" size="sm" opacity={0.9}>
+                  Triées du moins coûteux au plus coûteux en points
+                </Text>
+              </div>
+              <Text c="white" fw={700} size="xl">
+                {rewards.length} récompenses
+              </Text>
+            </Group>
+          </Paper>
+
+          <Grid>
+          {rewards.map((reward, index) => (
             <Grid.Col key={reward.id} span={{ base: 12, md: 6, lg: 4 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
+                <Box
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 10,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                  }}
+                >
+                  <Text c="white" fw={700} size="lg">
+                    #{index + 1}
+                  </Text>
+                </Box>
+
                 {reward.imageUrl && (
                   <Card.Section>
                     <Image
@@ -338,7 +378,8 @@ export function Rewards() {
               </Card>
             </Grid.Col>
           ))}
-        </Grid>
+          </Grid>
+        </Stack>
       )}
 
       <Modal

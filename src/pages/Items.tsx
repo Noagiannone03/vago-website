@@ -10,10 +10,16 @@ import {
   Badge,
   Card,
   ActionIcon,
+  Modal,
+  TextInput,
+  Textarea,
+  NumberInput,
+  Select,
 } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconBox, IconTrash, IconSparkles } from '@tabler/icons-react';
-import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp } from 'firebase/firestore';
+import { IconBox, IconTrash, IconSparkles, IconEdit, IconPlus } from '@tabler/icons-react';
+import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Item } from '../types';
 
@@ -26,6 +32,19 @@ const rarityColors = {
 
 export function Items() {
   const [items, setItems] = useState<Item[]>([]);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [modalOpened, setModalOpened] = useState(false);
+
+  const form = useForm({
+    initialValues: {
+      name: '',
+      description: '',
+      type: '',
+      rarity: 'common' as Item['rarity'],
+      effect: '',
+      value: 0,
+    },
+  });
 
   useEffect(() => {
     loadItems();
@@ -47,8 +66,6 @@ export function Items() {
         message: 'Impossible de charger les objets',
         color: 'red',
       });
-    } finally {
-      
     }
   };
 
@@ -132,6 +149,63 @@ export function Items() {
     }
   };
 
+  const handleEdit = (item: Item) => {
+    setEditingItem(item);
+    form.setValues({
+      name: item.name,
+      description: item.description,
+      type: item.type,
+      rarity: item.rarity,
+      effect: item.effect || '',
+      value: item.value || 0,
+    });
+    setModalOpened(true);
+  };
+
+  const handleSubmit = async (values: typeof form.values) => {
+    try {
+      const itemData = {
+        name: values.name,
+        description: values.description,
+        type: values.type,
+        rarity: values.rarity,
+        effect: values.effect || '',
+        value: values.value || 0,
+      };
+
+      if (editingItem) {
+        await updateDoc(doc(db, 'items', editingItem.id), itemData);
+        notifications.show({
+          title: 'Succès',
+          message: 'Objet modifié avec succès',
+          color: 'green',
+        });
+      } else {
+        await addDoc(collection(db, 'items'), {
+          ...itemData,
+          createdAt: Timestamp.now(),
+        });
+        notifications.show({
+          title: 'Succès',
+          message: 'Objet ajouté avec succès',
+          color: 'green',
+        });
+      }
+
+      form.reset();
+      setEditingItem(null);
+      setModalOpened(false);
+      loadItems();
+    } catch (error) {
+      console.error('Error saving item:', error);
+      notifications.show({
+        title: 'Erreur',
+        message: 'Impossible de sauvegarder l\'objet',
+        color: 'red',
+      });
+    }
+  };
+
   const handleDelete = async (itemId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet objet ?')) return;
 
@@ -162,14 +236,27 @@ export function Items() {
             Gérez les objets disponibles dans le jeu
           </Text>
         </div>
-        <Button
-          leftSection={<IconSparkles size={16} />}
-          onClick={initializeBaseItems}
-          gradient={{ from: '#f2994a', to: '#f2c94c' }}
-          variant="gradient"
-        >
-          Initialiser les objets de base
-        </Button>
+        <Group>
+          <Button
+            leftSection={<IconSparkles size={16} />}
+            onClick={initializeBaseItems}
+            variant="light"
+          >
+            Initialiser objets
+          </Button>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => {
+              setEditingItem(null);
+              form.reset();
+              setModalOpened(true);
+            }}
+            gradient={{ from: '#f2994a', to: '#f2c94c' }}
+            variant="gradient"
+          >
+            Nouvel objet
+          </Button>
+        </Group>
       </Group>
 
       {items.length === 0 ? (
@@ -192,13 +279,22 @@ export function Items() {
                     <Text fw={700} size="lg">
                       {item.name}
                     </Text>
-                    <ActionIcon
-                      variant="light"
-                      color="red"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
+                    <Group gap={5}>
+                      <ActionIcon
+                        variant="light"
+                        color="blue"
+                        onClick={() => handleEdit(item)}
+                      >
+                        <IconEdit size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="light"
+                        color="red"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
                   </Group>
 
                   <Group gap={5}>
@@ -236,6 +332,78 @@ export function Items() {
           ))}
         </Grid>
       )}
+
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        title={editingItem ? 'Modifier l\'objet' : 'Nouvel objet'}
+        size="lg"
+      >
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack gap="md">
+            <TextInput
+              label="Nom de l'objet"
+              placeholder="Ex: Boussole Magique"
+              required
+              {...form.getInputProps('name')}
+            />
+
+            <Textarea
+              label="Description"
+              placeholder="Description de l'objet..."
+              required
+              minRows={3}
+              {...form.getInputProps('description')}
+            />
+
+            <TextInput
+              label="Type"
+              placeholder="Ex: navigation, equipment, special..."
+              required
+              {...form.getInputProps('type')}
+            />
+
+            <Select
+              label="Rareté"
+              placeholder="Choisissez la rareté"
+              required
+              data={[
+                { value: 'common', label: 'Common (Commun)' },
+                { value: 'rare', label: 'Rare' },
+                { value: 'epic', label: 'Epic (Épique)' },
+                { value: 'legendary', label: 'Legendary (Légendaire)' },
+              ]}
+              {...form.getInputProps('rarity')}
+            />
+
+            <TextInput
+              label="Effet (optionnel)"
+              placeholder="Ex: Réduit le temps de trajet de 10%"
+              {...form.getInputProps('effect')}
+            />
+
+            <NumberInput
+              label="Valeur en miles"
+              placeholder="0"
+              min={0}
+              {...form.getInputProps('value')}
+            />
+
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={() => setModalOpened(false)}>
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                gradient={{ from: '#f2994a', to: '#f2c94c' }}
+                variant="gradient"
+              >
+                {editingItem ? 'Modifier' : 'Ajouter'}
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Modal>
     </Stack>
   );
 }

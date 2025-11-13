@@ -89,13 +89,27 @@ export function RewardClaims() {
 
   const loadClaims = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, 'rewardClaims'));
-      const claimsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as RewardClaim[];
+      // Essayer plusieurs noms de collections possibles
+      const possibleCollections = ['rewardClaims', 'reward_claims', 'claims'];
+      let claimsData: RewardClaim[] = [];
+
+      for (const collectionName of possibleCollections) {
+        try {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+          if (!querySnapshot.empty) {
+            claimsData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+              createdAt: doc.data().createdAt?.toDate(),
+              updatedAt: doc.data().updatedAt?.toDate(),
+            })) as RewardClaim[];
+            console.log(`✅ Trouvé ${claimsData.length} demandes dans '${collectionName}'`);
+            break;
+          }
+        } catch (err) {
+          console.log(`Collection '${collectionName}' non trouvée ou vide`);
+        }
+      }
 
       setClaims(claimsData);
 

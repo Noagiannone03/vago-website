@@ -76,14 +76,16 @@ export interface RewardClaim {
 
 export interface AppSettings {
   id: string;
-  maintenanceMode: boolean;
-  maintenanceDuration?: number; // Durée en minutes
-  maintenanceMessage?: string;
   welcomeMessage: string;
   minAppVersion: string;
   maxTripsPerDay: number;
   rewardMultiplier: number;
   updatedAt: Date;
+}
+
+export interface MaintenanceStatus {
+  isActive: boolean;
+  estimatedDuration?: string; // Ex: "2 heures", "30 minutes"
 }
 
 export interface DashboardStats {

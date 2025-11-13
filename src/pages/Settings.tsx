@@ -9,24 +9,25 @@ import {
   TextInput,
   Textarea,
   NumberInput,
-  Switch,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconSettings, IconDeviceFloppy } from '@tabler/icons-react';
-import { collection, getDocs, doc, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { AppSettings } from '../types';
+import type { AppSettings, MaintenanceStatus } from '../types';
 
 export function Settings() {
   const [saving, setSaving] = useState(false);
   const [settingsId, setSettingsId] = useState<string>('');
+  const [maintenanceStatus, setMaintenanceStatus] = useState<MaintenanceStatus>({
+    isActive: false,
+    estimatedDuration: '',
+  });
+  const [loadingMaintenance, setLoadingMaintenance] = useState(false);
 
   const form = useForm({
     initialValues: {
-      maintenanceMode: false,
-      maintenanceDuration: 30,
-      maintenanceMessage: 'Maintenance en cours. Nous revenons bientôt !',
       welcomeMessage: 'Bienvenue sur Vago !',
       minAppVersion: '1.0.0',
       maxTripsPerDay: 10,
@@ -34,8 +35,15 @@ export function Settings() {
     },
   });
 
+  const maintenanceForm = useForm({
+    initialValues: {
+      estimatedDuration: '',
+    },
+  });
+
   useEffect(() => {
     loadSettings();
+    loadMaintenanceStatus();
   }, []);
 
   const loadSettings = async () => {
@@ -48,9 +56,6 @@ export function Settings() {
         setSettingsId(settingsDoc.id);
 
         form.setValues({
-          maintenanceMode: settingsData.maintenanceMode || false,
-          maintenanceDuration: settingsData.maintenanceDuration || 30,
-          maintenanceMessage: settingsData.maintenanceMessage || 'Maintenance en cours. Nous revenons bientôt !',
           welcomeMessage: settingsData.welcomeMessage || 'Bienvenue sur Vago !',
           minAppVersion: settingsData.minAppVersion || '1.0.0',
           maxTripsPerDay: settingsData.maxTripsPerDay || 10,
@@ -64,8 +69,21 @@ export function Settings() {
         message: 'Impossible de charger les paramètres',
         color: 'red',
       });
-    } finally {
-      
+    }
+  };
+
+  const loadMaintenanceStatus = async () => {
+    try {
+      const maintenanceDoc = await getDoc(doc(db, 'app_status', 'maintenance'));
+      if (maintenanceDoc.exists()) {
+        const data = maintenanceDoc.data() as MaintenanceStatus;
+        setMaintenanceStatus(data);
+        maintenanceForm.setValues({
+          estimatedDuration: data.estimatedDuration || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading maintenance status:', error);
     }
   };
 
@@ -74,14 +92,11 @@ export function Settings() {
       setSaving(true);
 
       const settingsData = {
-        maintenanceMode: values.maintenanceMode,
-        maintenanceDuration: values.maintenanceDuration,
-        maintenanceMessage: values.maintenanceMessage,
         welcomeMessage: values.welcomeMessage,
         minAppVersion: values.minAppVersion,
         maxTripsPerDay: values.maxTripsPerDay,
         rewardMultiplier: values.rewardMultiplier,
-        updatedAt: Timestamp.now(),
+        updatedAt: new Date(),
       };
 
       const docRef = settingsId
@@ -111,6 +126,36 @@ export function Settings() {
     }
   };
 
+  const setMaintenance = async (isActive: boolean) => {
+    try {
+      setLoadingMaintenance(true);
+
+      const maintenanceData: MaintenanceStatus = {
+        isActive,
+        estimatedDuration: maintenanceForm.values.estimatedDuration,
+      };
+
+      await setDoc(doc(db, 'app_status', 'maintenance'), maintenanceData);
+
+      setMaintenanceStatus(maintenanceData);
+
+      notifications.show({
+        title: 'Succès',
+        message: isActive ? 'Maintenance activée' : 'Maintenance désactivée',
+        color: isActive ? 'orange' : 'green',
+      });
+    } catch (error) {
+      console.error('Error setting maintenance:', error);
+      notifications.show({
+        title: 'Erreur',
+        message: 'Impossible de modifier la maintenance',
+        color: 'red',
+      });
+    } finally {
+      setLoadingMaintenance(false);
+    }
+  };
+
   return (
     <Stack gap="lg">
       <Group justify="space-between">
@@ -122,51 +167,69 @@ export function Settings() {
         </div>
       </Group>
 
+      {/* Section Maintenance */}
+      <Paper shadow="sm" p="xl" radius="md" withBorder>
+        <Stack gap="lg">
+          <div>
+            <Text fw={500} size="lg" mb={4}>
+              Mode Maintenance
+            </Text>
+            <Text size="sm" c="dimmed">
+              Activer ce mode empêchera les utilisateurs d'accéder à l'application
+            </Text>
+          </div>
+
+          <Paper
+            p="md"
+            withBorder
+            style={{
+              background: maintenanceStatus.isActive ? '#f8d7da' : '#d4edda',
+              borderColor: maintenanceStatus.isActive ? '#f5c6cb' : '#c3e6cb',
+            }}
+          >
+            <Text
+              fw={700}
+              size="lg"
+              c={maintenanceStatus.isActive ? '#721c24' : '#155724'}
+            >
+              {maintenanceStatus.isActive
+                ? `MAINTENANCE ACTIVE - Durée: ${maintenanceStatus.estimatedDuration || 'Non définie'}`
+                : 'MAINTENANCE INACTIVE'}
+            </Text>
+          </Paper>
+
+          <TextInput
+            label="Durée estimée de la maintenance"
+            description="Ce texte sera affiché aux utilisateurs sur l'écran de maintenance"
+            placeholder="Ex: 2 heures, 30 minutes..."
+            {...maintenanceForm.getInputProps('estimatedDuration')}
+          />
+
+          <Group grow>
+            <Button
+              color="red"
+              onClick={() => setMaintenance(true)}
+              loading={loadingMaintenance}
+              disabled={maintenanceStatus.isActive}
+            >
+              Activer la Maintenance
+            </Button>
+            <Button
+              color="green"
+              onClick={() => setMaintenance(false)}
+              loading={loadingMaintenance}
+              disabled={!maintenanceStatus.isActive}
+            >
+              Désactiver la Maintenance
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
+
+      {/* Section Paramètres Généraux */}
       <Paper shadow="sm" p="xl" radius="md" withBorder>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="lg">
-            <Paper p="md" withBorder style={{ background: form.values.maintenanceMode ? '#fff3cd' : undefined }}>
-              <Stack gap="md">
-                <Group justify="space-between">
-                  <div>
-                    <Text fw={500} size="lg" mb={4}>
-                      Mode Maintenance
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      Activer ce mode empêchera les utilisateurs d'accéder à l'application
-                    </Text>
-                  </div>
-                  <Switch
-                    size="lg"
-                    onLabel="ON"
-                    offLabel="OFF"
-                    {...form.getInputProps('maintenanceMode', { type: 'checkbox' })}
-                  />
-                </Group>
-
-                {form.values.maintenanceMode && (
-                  <Stack gap="md" mt="md">
-                    <NumberInput
-                      label="Durée de la maintenance (en minutes)"
-                      description="Durée estimée de la maintenance"
-                      placeholder="30"
-                      min={1}
-                      max={1440}
-                      {...form.getInputProps('maintenanceDuration')}
-                    />
-
-                    <Textarea
-                      label="Message de maintenance"
-                      description="Message affiché aux utilisateurs pendant la maintenance"
-                      placeholder="Maintenance en cours. Nous revenons bientôt !"
-                      minRows={2}
-                      {...form.getInputProps('maintenanceMessage')}
-                    />
-                  </Stack>
-                )}
-              </Stack>
-            </Paper>
-
             <Textarea
               label="Message de bienvenue"
               description="Message affiché aux utilisateurs lors de leur première connexion"

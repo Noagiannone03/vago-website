@@ -6,7 +6,6 @@ import {
   Paper,
   Button,
   Group,
-  Grid,
   Card,
   ActionIcon,
   Modal,
@@ -15,10 +14,13 @@ import {
   NumberInput,
   Image,
   Box,
+  Timeline,
+  Badge,
+  Divider,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconGift, IconPlus, IconEdit, IconTrash, IconSparkles } from '@tabler/icons-react';
+import { IconGift, IconPlus, IconEdit, IconTrash, IconSparkles, IconTrophy, IconStar, IconAward } from '@tabler/icons-react';
 import {
   collection,
   addDoc,
@@ -69,8 +71,6 @@ export function Rewards() {
         message: 'Impossible de charger les récompenses',
         color: 'red',
       });
-    } finally {
-      
     }
   };
 
@@ -237,6 +237,20 @@ export function Rewards() {
     }
   };
 
+  const getRewardIcon = (index: number) => {
+    if (index === 0) return IconStar;
+    if (index < 3) return IconTrophy;
+    return IconAward;
+  };
+
+  const getRewardColor = (index: number, totalRewards: number) => {
+    const percentage = (index / (totalRewards - 1)) * 100;
+    if (percentage < 25) return 'green';
+    if (percentage < 50) return 'blue';
+    if (percentage < 75) return 'violet';
+    return 'orange';
+  };
+
   return (
     <Stack gap="lg">
       <Group justify="space-between">
@@ -281,104 +295,124 @@ export function Rewards() {
         </Paper>
       ) : (
         <Stack gap="md">
-          <Paper p="md" withBorder style={{ background: 'linear-gradient(135deg, #56ab2f 20%, #a8e063 100%)' }}>
+          {/* Header Arbre */}
+          <Paper
+            p="lg"
+            withBorder
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            }}
+          >
             <Group justify="space-between" align="center">
               <div>
-                <Text c="white" fw={700} size="lg">
-                  📊 Catalogue des récompenses
+                <Text c="white" fw={700} size="xl" mb={5}>
+                  🎁 Arbre des Récompenses
                 </Text>
-                <Text c="white" size="sm" opacity={0.9}>
-                  Triées du moins coûteux au plus coûteux en points
+                <Text c="white" size="sm" opacity={0.95}>
+                  Progression des récompenses du niveau débutant au niveau expert
                 </Text>
               </div>
-              <Text c="white" fw={700} size="xl">
-                {rewards.length} récompenses
-              </Text>
+              <Box
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <Text c="white" fw={700} size="xl">
+                  {rewards.length} niveaux
+                </Text>
+              </Box>
             </Group>
           </Paper>
 
-          <Grid>
-          {rewards.map((reward, index) => (
-            <Grid.Col key={reward.id} span={{ base: 12, md: 6, lg: 4 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
-                <Box
-                  style={{
-                    position: 'absolute',
-                    top: 10,
-                    left: 10,
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    borderRadius: '50%',
-                    width: 40,
-                    height: 40,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1,
-                  }}
-                >
-                  <Text c="white" fw={700} size="lg">
-                    #{index + 1}
-                  </Text>
-                </Box>
+          {/* Timeline des Récompenses */}
+          <Paper p="xl" withBorder>
+            <Timeline active={rewards.length} bulletSize={40} lineWidth={3}>
+              {rewards.map((reward, index) => {
+                const Icon = getRewardIcon(index);
+                const color = getRewardColor(index, rewards.length);
 
-                {reward.imageUrl && (
-                  <Card.Section>
-                    <Image
-                      src={reward.imageUrl}
-                      alt={reward.title}
-                      height={200}
-                      fit="cover"
-                    />
-                  </Card.Section>
-                )}
-
-                <Stack gap="xs" mt="md">
-                  <Group justify="space-between">
-                    <Text fw={700} size="lg">
-                      {reward.title}
-                    </Text>
-                    <Group gap={5}>
-                      <ActionIcon
-                        variant="light"
-                        color="blue"
-                        onClick={() => handleEdit(reward)}
-                      >
-                        <IconEdit size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        variant="light"
-                        color="red"
-                        onClick={() => handleDelete(reward.id)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Group>
-
-                  <Text size="sm" c="blue" fw={500}>
-                    {reward.subtitle}
-                  </Text>
-
-                  <Text size="sm" c="dimmed" lineClamp={3}>
-                    {reward.description}
-                  </Text>
-
-                  <Box
-                    p="sm"
-                    style={{
-                      background: 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
-                      borderRadius: '8px',
-                    }}
+                return (
+                  <Timeline.Item
+                    key={reward.id}
+                    bullet={<Icon size={20} />}
+                    title={
+                      <Group gap="xs">
+                        <Text fw={700} size="lg">
+                          Niveau {index + 1}
+                        </Text>
+                        <Badge color={color} variant="filled" size="lg">
+                          {reward.cost} miles
+                        </Badge>
+                      </Group>
+                    }
+                    color={color}
                   >
-                    <Text ta="center" c="white" fw={700} size="lg">
-                      {reward.cost} miles
-                    </Text>
-                  </Box>
-                </Stack>
-              </Card>
-            </Grid.Col>
-          ))}
-          </Grid>
+                    <Card withBorder shadow="sm" mt="xs" mb="lg">
+                      <Stack gap="md">
+                        {reward.imageUrl && (
+                          <Card.Section>
+                            <Image
+                              src={reward.imageUrl}
+                              alt={reward.title}
+                              height={180}
+                              fit="cover"
+                            />
+                          </Card.Section>
+                        )}
+
+                        <Group justify="space-between" align="flex-start">
+                          <Stack gap={5} style={{ flex: 1 }}>
+                            <Text fw={700} size="xl" c={color}>
+                              {reward.title}
+                            </Text>
+                            <Text size="sm" c="blue" fw={500}>
+                              {reward.subtitle}
+                            </Text>
+                            <Text size="sm" c="dimmed" mt="xs">
+                              {reward.description}
+                            </Text>
+                          </Stack>
+
+                          <Group gap={5}>
+                            <ActionIcon
+                              variant="light"
+                              color="blue"
+                              onClick={() => handleEdit(reward)}
+                              size="lg"
+                            >
+                              <IconEdit size={18} />
+                            </ActionIcon>
+                            <ActionIcon
+                              variant="light"
+                              color="red"
+                              onClick={() => handleDelete(reward.id)}
+                              size="lg"
+                            >
+                              <IconTrash size={18} />
+                            </ActionIcon>
+                          </Group>
+                        </Group>
+
+                        {index < rewards.length - 1 && (
+                          <>
+                            <Divider my="sm" />
+                            <Group justify="center">
+                              <Text size="sm" c="dimmed" fw={500}>
+                                ▼ {rewards[index + 1].cost - reward.cost} miles pour atteindre le niveau suivant
+                              </Text>
+                            </Group>
+                          </>
+                        )}
+                      </Stack>
+                    </Card>
+                  </Timeline.Item>
+                );
+              })}
+            </Timeline>
+          </Paper>
         </Stack>
       )}
 

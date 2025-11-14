@@ -56,11 +56,11 @@ export function Trips() {
       title: '',
       type: 'food',
       from: '',
-      fromLat: 0,
-      fromLng: 0,
+      fromLatitude: 0,
+      fromLongitude: 0,
       to: '',
-      toLat: 0,
-      toLng: 0,
+      toLatitude: 0,
+      toLongitude: 0,
       distance: 0,
       duration: 0,
       reward: 0,
@@ -109,9 +109,9 @@ export function Trips() {
         title: values.title,
         type: values.type,
         from: values.from,
-        fromCoordinates: { lat: values.fromLat, lng: values.fromLng },
+        fromCoordinates: { latitude: values.fromLatitude, longitude: values.fromLongitude },
         to: values.to,
-        toCoordinates: { lat: values.toLat, lng: values.toLng },
+        toCoordinates: { latitude: values.toLatitude, longitude: values.toLongitude },
         distance: values.distance,
         duration: values.duration,
         reward: values.reward,
@@ -184,11 +184,11 @@ export function Trips() {
       title: trip.title,
       type: trip.type,
       from: trip.from,
-      fromLat: trip.fromCoordinates.lat,
-      fromLng: trip.fromCoordinates.lng,
+      fromLatitude: trip.fromCoordinates.latitude,
+      fromLongitude: trip.fromCoordinates.longitude,
       to: trip.to,
-      toLat: trip.toCoordinates.lat,
-      toLng: trip.toCoordinates.lng,
+      toLatitude: trip.toCoordinates.latitude,
+      toLongitude: trip.toCoordinates.longitude,
       distance: trip.distance,
       duration: trip.duration,
       reward: trip.reward,
@@ -196,6 +196,7 @@ export function Trips() {
       description: trip.description,
     });
     setEvents(trip.events || []);
+    setImageFile(null); // Reset image file when editing
     setModalOpened(true);
   };
 
@@ -203,16 +204,16 @@ export function Trips() {
     setEvents([
       ...events,
       {
-        id: uuidv4(),
+        eventId: uuidv4(),
         title: '',
-        description: '',
-        arrivalTime: '',
-        departureTime: '',
+        category: '',
+        type: 'fixed',
+        timing: 0,
       },
     ]);
   };
 
-  const updateEvent = (index: number, field: keyof TripEvent, value: string) => {
+  const updateEvent = (index: number, field: keyof TripEvent, value: string | number) => {
     const newEvents = [...events];
     newEvents[index] = { ...newEvents[index], [field]: value };
     setEvents(newEvents);
@@ -385,7 +386,7 @@ export function Trips() {
                   placeholder="48.8566"
                   required
                   decimalScale={6}
-                  {...form.getInputProps('fromLat')}
+                  {...form.getInputProps('fromLatitude')}
                 />
               </Grid.Col>
               <Grid.Col span={3}>
@@ -394,7 +395,7 @@ export function Trips() {
                   placeholder="2.3522"
                   required
                   decimalScale={6}
-                  {...form.getInputProps('fromLng')}
+                  {...form.getInputProps('fromLongitude')}
                 />
               </Grid.Col>
             </Grid>
@@ -414,7 +415,7 @@ export function Trips() {
                   placeholder="43.2965"
                   required
                   decimalScale={6}
-                  {...form.getInputProps('toLat')}
+                  {...form.getInputProps('toLatitude')}
                 />
               </Grid.Col>
               <Grid.Col span={3}>
@@ -423,7 +424,7 @@ export function Trips() {
                   placeholder="5.3698"
                   required
                   decimalScale={6}
-                  {...form.getInputProps('toLng')}
+                  {...form.getInputProps('toLongitude')}
                 />
               </Grid.Col>
             </Grid>
@@ -491,7 +492,7 @@ export function Trips() {
 
             <Stack gap="md">
               {events.map((event, index) => (
-                <Paper key={event.id} p="md" withBorder>
+                <Paper key={event.eventId} p="md" withBorder>
                   <Group justify="space-between" mb="xs">
                     <Text fw={500}>Événement {index + 1}</Text>
                     <ActionIcon color="red" onClick={() => removeEvent(index)}>
@@ -499,39 +500,41 @@ export function Trips() {
                     </ActionIcon>
                   </Group>
                   <Grid>
-                    <Grid.Col span={12}>
+                    <Grid.Col span={6}>
                       <TextInput
                         label="Titre"
-                        placeholder="Ex: Arrêt à Lyon"
+                        placeholder="Ex: Péage, Radar"
                         value={event.title}
                         onChange={(e) => updateEvent(index, 'title', e.target.value)}
                       />
                     </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Textarea
-                        label="Description"
-                        placeholder="Description de l'événement"
-                        value={event.description}
-                        onChange={(e) => updateEvent(index, 'description', e.target.value)}
-                        minRows={2}
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Catégorie"
+                        placeholder="Ex: peage, radar"
+                        value={event.category}
+                        onChange={(e) => updateEvent(index, 'category', e.target.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <TextInput
-                        label="Heure d'arrivée"
-                        placeholder="14:30"
-                        value={event.arrivalTime}
-                        onChange={(e) => updateEvent(index, 'arrivalTime', e.target.value)}
+                      <Select
+                        label="Type"
+                        placeholder="Type d'événement"
+                        value={event.type}
+                        onChange={(value) => updateEvent(index, 'type', value || 'fixed')}
+                        data={[
+                          { value: 'fixed', label: 'Fixe' },
+                          { value: 'random', label: 'Aléatoire' },
+                        ]}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <TextInput
-                        label="Heure de départ"
-                        placeholder="15:00"
-                        value={event.departureTime}
-                        onChange={(e) =>
-                          updateEvent(index, 'departureTime', e.target.value)
-                        }
+                      <NumberInput
+                        label="Timing (minutes)"
+                        placeholder="Ex: 10"
+                        value={event.timing}
+                        onChange={(value) => updateEvent(index, 'timing', typeof value === 'number' ? value : 0)}
+                        min={0}
                       />
                     </Grid.Col>
                   </Grid>

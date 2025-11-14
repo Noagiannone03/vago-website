@@ -90,8 +90,9 @@ export function RewardClaims() {
   const loadClaims = async () => {
     try {
       // Essayer plusieurs noms de collections possibles
-      const possibleCollections = ['rewardClaims', 'reward_claims', 'claims'];
+      const possibleCollections = ['reward-claims', 'rewardClaims', 'reward_claims', 'claims'];
       let claimsData: RewardClaim[] = [];
+      let usedCollection = '';
 
       for (const collectionName of possibleCollections) {
         try {
@@ -103,12 +104,18 @@ export function RewardClaims() {
               createdAt: doc.data().createdAt?.toDate(),
               updatedAt: doc.data().updatedAt?.toDate(),
             })) as RewardClaim[];
+            usedCollection = collectionName;
             console.log(`✅ Trouvé ${claimsData.length} demandes dans '${collectionName}'`);
             break;
           }
         } catch (err) {
           console.log(`Collection '${collectionName}' non trouvée ou vide`);
         }
+      }
+
+      // Store the collection name for updates
+      if (usedCollection) {
+        (window as any).__rewardClaimsCollection = usedCollection;
       }
 
       setClaims(claimsData);
@@ -146,7 +153,8 @@ export function RewardClaims() {
   const updateClaimStatus = async (
     claimId: string,
     newStatus: RewardClaim['status'],
-    trackingNumber?: string
+    trackingNumber?: string,
+    notes?: string
   ) => {
     try {
       const updateData: any = {
@@ -158,7 +166,13 @@ export function RewardClaims() {
         updateData.trackingNumber = trackingNumber;
       }
 
-      await updateDoc(doc(db, 'rewardClaims', claimId), updateData);
+      if (notes) {
+        updateData.adminNotes = notes;
+      }
+
+      // Use the stored collection name
+      const collectionName = (window as any).__rewardClaimsCollection || 'reward-claims';
+      await updateDoc(doc(db, collectionName, claimId), updateData);
 
       notifications.show({
         title: 'Succès',
@@ -282,24 +296,44 @@ export function RewardClaims() {
                           <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
                             Utilisateur
                           </Text>
-                          <Text size="sm">{claim.userName || 'N/A'}</Text>
+                          <Text size="sm">{claim.userPseudo || 'N/A'}</Text>
                           <Text size="xs" c="dimmed">
                             {claim.userEmail}
                           </Text>
                         </Grid.Col>
 
-                        {claim.shippingAddress && (
-                          <Grid.Col span={6}>
+                        <Grid.Col span={6}>
+                          <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                            Coût
+                          </Text>
+                          <Text size="sm" fw={700} c="blue">
+                            {claim.pointsCost} points
+                          </Text>
+                        </Grid.Col>
+
+                        {claim.personalInfo && (
+                          <Grid.Col span={12}>
                             <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                              Adresse de livraison
+                              Informations personnelles
                             </Text>
-                            <Text size="sm">{claim.shippingAddress.street}</Text>
+                            <Text size="sm">
+                              {claim.personalInfo.prenom} {claim.personalInfo.nom}
+                            </Text>
                             <Text size="xs" c="dimmed">
-                              {claim.shippingAddress.zipCode} {claim.shippingAddress.city}
+                              {claim.personalInfo.adresse}
+                              {claim.personalInfo.batiment && `, ${claim.personalInfo.batiment}`}
                             </Text>
                             <Text size="xs" c="dimmed">
-                              {claim.shippingAddress.country}
+                              {claim.personalInfo.codePostal} {claim.personalInfo.ville}
                             </Text>
+                            <Text size="xs" c="dimmed">
+                              Tél: {claim.personalInfo.telephone}
+                            </Text>
+                            {claim.personalInfo.informationsComplementaires && (
+                              <Text size="xs" c="dimmed" mt={4}>
+                                Info complémentaires: {claim.personalInfo.informationsComplementaires}
+                              </Text>
+                            )}
                           </Grid.Col>
                         )}
 
@@ -352,16 +386,35 @@ export function RewardClaims() {
                   </Grid.Col>
                 </Grid>
 
-                {claim.notes && (
+                {claim.adminNotes && (
                   <>
                     <Divider mt="md" mb="xs" />
                     <Paper p="xs" withBorder>
                       <Text size="xs" fw={700} mb={4}>
-                        Notes:
+                        Notes admin:
                       </Text>
                       <Text size="sm" c="dimmed">
-                        {claim.notes}
+                        {claim.adminNotes}
                       </Text>
+                    </Paper>
+                  </>
+                )}
+
+                {claim.rewardDescription && (
+                  <>
+                    <Divider mt="md" mb="xs" />
+                    <Paper p="xs" withBorder bg="blue.0">
+                      <Text size="xs" fw={700} mb={4}>
+                        Description de la récompense:
+                      </Text>
+                      <Text size="sm">
+                        {claim.rewardDescription}
+                      </Text>
+                      {claim.rewardSubtitle && (
+                        <Text size="xs" c="dimmed" mt={4}>
+                          {claim.rewardSubtitle}
+                        </Text>
+                      )}
                     </Paper>
                   </>
                 )}
@@ -392,8 +445,33 @@ export function RewardClaims() {
                     {statusConfig[selectedClaim.status].label}
                   </Badge>
                 </Group>
+                {selectedClaim.rewardSubtitle && (
+                  <Text size="sm" c="dimmed">
+                    {selectedClaim.rewardSubtitle}
+                  </Text>
+                )}
               </Stack>
             </Paper>
+
+            {selectedClaim.personalInfo && (
+              <Paper p="md" withBorder>
+                <Text size="sm" fw={700} mb="xs">
+                  Informations de livraison:
+                </Text>
+                <Text size="sm">
+                  {selectedClaim.personalInfo.prenom} {selectedClaim.personalInfo.nom}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {selectedClaim.personalInfo.adresse}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {selectedClaim.personalInfo.codePostal} {selectedClaim.personalInfo.ville}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Tél: {selectedClaim.personalInfo.telephone}
+                </Text>
+              </Paper>
+            )}
 
             <Divider label="Changer le statut" />
 
@@ -401,7 +479,10 @@ export function RewardClaims() {
               <Button
                 variant="light"
                 color="blue"
-                onClick={() => updateClaimStatus(selectedClaim.id, 'approved')}
+                onClick={() => {
+                  const notes = prompt('Notes admin (optionnel):');
+                  updateClaimStatus(selectedClaim.id, 'approved', undefined, notes || undefined);
+                }}
                 disabled={selectedClaim.status === 'approved'}
               >
                 Approuver
@@ -409,7 +490,12 @@ export function RewardClaims() {
               <Button
                 variant="light"
                 color="red"
-                onClick={() => updateClaimStatus(selectedClaim.id, 'rejected')}
+                onClick={() => {
+                  const notes = prompt('Raison du rejet:');
+                  if (notes) {
+                    updateClaimStatus(selectedClaim.id, 'rejected', undefined, notes);
+                  }
+                }}
                 disabled={selectedClaim.status === 'rejected'}
               >
                 Rejeter

@@ -4,13 +4,13 @@ export interface Trip {
   type: 'food' | 'package' | 'document';
   from: string;
   fromCoordinates: {
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
   };
   to: string;
   toCoordinates: {
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
   };
   distance: number;
   duration: number;
@@ -19,16 +19,16 @@ export interface Trip {
   description: string;
   imageUrl?: string;
   events?: TripEvent[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface TripEvent {
-  id: string;
+  eventId: string;
+  category: string;
   title: string;
-  description: string;
-  arrivalTime: string;
-  departureTime: string;
+  type: string;
+  timing: number;
 }
 
 export interface Item {
@@ -58,18 +58,25 @@ export interface RewardClaim {
   id: string;
   userId: string;
   userEmail: string;
-  userName: string;
+  userPseudo: string;
   rewardId: string;
   rewardTitle: string;
+  rewardSubtitle: string;
+  rewardDescription: string;
+  pointsCost: number;
   status: 'pending' | 'approved' | 'rejected' | 'in_preparation' | 'shipped' | 'delivered';
-  shippingAddress?: {
-    street: string;
-    city: string;
-    zipCode: string;
-    country: string;
+  personalInfo: {
+    nom: string;
+    prenom: string;
+    adresse: string;
+    ville: string;
+    codePostal: string;
+    telephone: string;
+    batiment?: string;
+    informationsComplementaires?: string;
   };
   trackingNumber?: string;
-  notes?: string;
+  adminNotes?: string;
   createdAt: Date;
   updatedAt: Date;
 }

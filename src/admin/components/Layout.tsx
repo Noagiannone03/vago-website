@@ -42,16 +42,16 @@ export function Layout({ children }: LayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/admin');
   };
 
   const menuItems = [
-    { icon: IconDashboard, label: 'Tableau de bord', path: '/' },
-    { icon: IconRoute, label: 'Trajets', path: '/trips' },
-    { icon: IconBox, label: 'Objets', path: '/items' },
-    { icon: IconGift, label: 'Récompenses', path: '/rewards' },
-    { icon: IconHandGrab, label: 'Demandes de récompenses', path: '/reward-claims' },
-    { icon: IconSettings, label: 'Paramètres App', path: '/settings' },
+    { icon: IconDashboard, label: 'Tableau de bord', path: '/admin' },
+    { icon: IconRoute, label: 'Trajets', path: '/admin/trips' },
+    { icon: IconBox, label: 'Objets', path: '/admin/items' },
+    { icon: IconGift, label: 'Récompenses', path: '/admin/rewards' },
+    { icon: IconHandGrab, label: 'Demandes de récompenses', path: '/admin/reward-claims' },
+    { icon: IconSettings, label: 'Paramètres App', path: '/admin/settings' },
   ];
 
   return (

@@ -20,12 +20,12 @@ function AdminRoutes() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/trips" element={<Trips />} />
-        <Route path="/items" element={<Items />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/reward-claims" element={<RewardClaims />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<Navigate to="/admin" />} />
+        <Route path="trips" element={<Trips />} />
+        <Route path="items" element={<Items />} />
+        <Route path="rewards" element={<Rewards />} />
+        <Route path="reward-claims" element={<RewardClaims />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Layout>
   );

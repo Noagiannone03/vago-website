@@ -23,9 +23,8 @@ import {
   IconPackage,
   IconTruck,
   IconEye,
-  IconRefresh,
 } from '@tabler/icons-react';
-import { collection, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { RewardClaim } from '../../types';
 import './RewardClaims.css';
@@ -45,51 +44,58 @@ export function RewardClaims() {
   const [modalOpened, setModalOpened] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
-  const [loading, setLoading] = useState(false);
   const [collectionName, setCollectionName] = useState('reward-claims');
 
   useEffect(() => {
-    loadClaims();
-  }, []);
+    const possibleCollections = ['reward-claims', 'rewardClaims', 'reward_claims'];
+    let unsubscribe: (() => void) | null = null;
 
-  const loadClaims = async () => {
-    setLoading(true);
-    try {
-      const possibleCollections = ['reward-claims', 'rewardClaims', 'reward_claims'];
-      let claimsData: RewardClaim[] = [];
-      let usedCollection = '';
-
+    const setupListener = async () => {
       for (const collName of possibleCollections) {
         try {
-          const querySnapshot = await getDocs(collection(db, collName));
-          if (!querySnapshot.empty) {
-            claimsData = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate(),
-              updatedAt: doc.data().updatedAt?.toDate(),
-            })) as RewardClaim[];
-            usedCollection = collName;
+          // Test si la collection existe
+          const testSnapshot = await getDocs(collection(db, collName));
+          if (!testSnapshot.empty || collName === possibleCollections[0]) {
+            setCollectionName(collName);
+
+            // Listener temps réel
+            unsubscribe = onSnapshot(
+              collection(db, collName),
+              (snapshot) => {
+                const claimsData = snapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                  createdAt: doc.data().createdAt?.toDate(),
+                  updatedAt: doc.data().updatedAt?.toDate(),
+                })) as RewardClaim[];
+
+                setClaims(claimsData);
+              },
+              (error) => {
+                console.error('Erreur listener:', error);
+                notifications.show({
+                  title: 'Erreur',
+                  message: 'Impossible de charger les demandes',
+                  color: 'red',
+                });
+              }
+            );
             break;
           }
         } catch (err) {
           console.log(`Collection '${collName}' non trouvée`);
         }
       }
+    };
 
-      setCollectionName(usedCollection);
-      setClaims(claimsData);
-    } catch (error) {
-      console.error('Erreur chargement:', error);
-      notifications.show({
-        title: 'Erreur',
-        message: 'Impossible de charger les demandes',
-        color: 'red',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setupListener();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   const updateClaimStatus = async (claimId: string, newStatus: ClaimStatus, tracking?: string, notes?: string) => {
     try {
@@ -109,7 +115,6 @@ export function RewardClaims() {
         color: 'green',
       });
 
-      await loadClaims();
       setModalOpened(false);
       setSelectedClaim(null);
       setTrackingNumber('');
@@ -247,14 +252,9 @@ export function RewardClaims() {
             Workflow de traitement des récompenses
           </Text>
         </div>
-        <Button
-          leftSection={<IconRefresh size={16} />}
-          variant="light"
-          onClick={loadClaims}
-          loading={loading}
-        >
-          Actualiser
-        </Button>
+        <Badge size="lg" variant="dot" color="green">
+          Temps réel
+        </Badge>
       </Group>
 
       <ScrollArea>

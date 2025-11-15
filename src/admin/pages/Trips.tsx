@@ -206,7 +206,7 @@ export function Trips() {
       {
         eventId: uuidv4(),
         title: '',
-        category: '',
+        category: 'general',
         type: 'fixed',
         timing: 0,
       },
@@ -509,11 +509,26 @@ export function Trips() {
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <TextInput
+                      <Select
                         label="Catégorie"
-                        placeholder="Ex: peage, radar"
+                        placeholder="Sélectionner une catégorie"
                         value={event.category}
-                        onChange={(e) => updateEvent(index, 'category', e.target.value)}
+                        onChange={(value) => updateEvent(index, 'category', value || 'general')}
+                        data={[
+                          { value: 'general', label: 'Général' },
+                          { value: 'bouchon', label: 'Bouchon' },
+                          { value: 'pluie', label: 'Pluie' },
+                          { value: 'route-barree', label: 'Route barrée' },
+                          { value: 'colis-mystere', label: 'Colis mystère' },
+                          { value: 'pause-fatigue', label: 'Pause fatigue' },
+                          { value: 'pneu-creve', label: 'Pneu crevé' },
+                          { value: 'controle-police', label: 'Contrôle de police' },
+                          { value: 'feu-rouge', label: 'Feu rouge' },
+                          { value: 'radar', label: 'Radar' },
+                          { value: 'panneaux', label: 'Panneaux routiers' },
+                          { value: 'peage', label: 'Péage automatique' },
+                          { value: 'radio', label: 'Radio' },
+                        ]}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>

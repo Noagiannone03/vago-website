@@ -1,0 +1,129 @@
+.problem-section {
+  background: var(--vago-gray-light);
+  position: relative;
+}
+
+.problem-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(180deg, rgba(43, 185, 245, 0.03) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.problem-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.problem-emoji {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 1rem;
+  animation: shake 2s ease-in-out infinite;
+  filter: grayscale(0.3);
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.problem-card {
+  text-align: center;
+}
+
+.problem-card-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.problem-card-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--vago-black);
+  margin-bottom: 1rem;
+}
+
+.problem-card-text {
+  font-size: 1.1rem;
+  color: var(--vago-gray);
+  line-height: 1.7;
+}
+
+.problem-quote {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.quote-content {
+  background: linear-gradient(135deg, var(--vago-blue-light) 0%, var(--vago-blue) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+  padding: 3rem;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.quote-content::before {
+  content: '"';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  font-size: 8rem;
+  font-weight: 900;
+  color: var(--vago-white);
+  opacity: 0.2;
+}
+
+.quote-text {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--vago-white);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.quote-author {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--vago-white);
+  text-align: right;
+  opacity: 0.95;
+}
+
+@media (max-width: 768px) {
+  .problem-emoji {
+    font-size: 4rem;
+  }
+
+  .problem-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quote-content {
+    padding: 2rem;
+  }
+
+  .quote-text {
+    font-size: 1.2rem;
+  }
+
+  .quote-content::before {
+    font-size: 6rem;
+    top: -30px;
+  }
+}

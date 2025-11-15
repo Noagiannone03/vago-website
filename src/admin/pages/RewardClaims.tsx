@@ -7,534 +7,402 @@ import {
   Button,
   Group,
   Badge,
-  Card,
   Grid,
-  Select,
-
   Modal,
-  Divider,
-  SimpleGrid,
-  ThemeIcon,
+  TextInput,
+  Textarea,
+  ScrollArea,
+  ActionIcon,
+  Tooltip,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
-  IconHandGrab,
   IconClock,
   IconCheck,
   IconX,
   IconPackage,
   IconTruck,
-  IconHome,
-  IconFilter,
+  IconEye,
 } from '@tabler/icons-react';
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { RewardClaim } from '../../types';
+import './RewardClaims.css';
 
-const statusConfig = {
-  pending: {
-    label: 'En attente',
-    color: 'yellow',
-    icon: IconClock,
-  },
-  approved: {
-    label: 'Approuvée',
-    color: 'blue',
-    icon: IconCheck,
-  },
-  rejected: {
-    label: 'Rejetée',
-    color: 'red',
-    icon: IconX,
-  },
-  in_preparation: {
-    label: 'En préparation',
-    color: 'cyan',
-    icon: IconPackage,
-  },
-  shipped: {
-    label: 'Expédiée',
-    color: 'grape',
-    icon: IconTruck,
-  },
-  delivered: {
-    label: 'Livrée',
-    color: 'green',
-    icon: IconHome,
-  },
-};
+type ClaimStatus = 'pending' | 'approved' | 'in_preparation' | 'shipped' | 'delivered' | 'rejected';
+
+const WORKFLOW_COLUMNS = [
+  { id: 'pending', title: 'Nouvelles demandes', color: '#fbbf24', icon: IconClock },
+  { id: 'approved', title: 'Approuvées', color: '#3b82f6', icon: IconCheck },
+  { id: 'in_preparation', title: 'En préparation', color: '#8b5cf6', icon: IconPackage },
+  { id: 'shipped', title: 'Expédiées', color: '#10b981', icon: IconTruck },
+];
 
 export function RewardClaims() {
   const [claims, setClaims] = useState<RewardClaim[]>([]);
-  const [filteredClaims, setFilteredClaims] = useState<RewardClaim[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<RewardClaim | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [stats, setStats] = useState({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    in_preparation: 0,
-    shipped: 0,
-    delivered: 0,
-  });
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
+  const [collectionName, setCollectionName] = useState('reward-claims');
 
   useEffect(() => {
-    loadClaims();
-  }, []);
+    const possibleCollections = ['reward-claims', 'rewardClaims', 'reward_claims'];
+    let unsubscribe: (() => void) | null = null;
 
-  useEffect(() => {
-    filterClaims();
-  }, [claims, statusFilter]);
-
-  const loadClaims = async () => {
-    try {
-      // Essayer plusieurs noms de collections possibles
-      const possibleCollections = ['reward-claims', 'rewardClaims', 'reward_claims', 'claims'];
-      let claimsData: RewardClaim[] = [];
-      let usedCollection = '';
-
-      for (const collectionName of possibleCollections) {
+    const setupListener = async () => {
+      for (const collName of possibleCollections) {
         try {
-          const querySnapshot = await getDocs(collection(db, collectionName));
-          if (!querySnapshot.empty) {
-            claimsData = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate(),
-              updatedAt: doc.data().updatedAt?.toDate(),
-            })) as RewardClaim[];
-            usedCollection = collectionName;
-            console.log(`✅ Trouvé ${claimsData.length} demandes dans '${collectionName}'`);
+          // Test si la collection existe
+          const testSnapshot = await getDocs(collection(db, collName));
+          if (!testSnapshot.empty || collName === possibleCollections[0]) {
+            setCollectionName(collName);
+
+            // Listener temps réel
+            unsubscribe = onSnapshot(
+              collection(db, collName),
+              (snapshot) => {
+                const claimsData = snapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                  createdAt: doc.data().createdAt?.toDate(),
+                  updatedAt: doc.data().updatedAt?.toDate(),
+                })) as RewardClaim[];
+
+                setClaims(claimsData);
+              },
+              (error) => {
+                console.error('Erreur listener:', error);
+                notifications.show({
+                  title: 'Erreur',
+                  message: 'Impossible de charger les demandes',
+                  color: 'red',
+                });
+              }
+            );
             break;
           }
         } catch (err) {
-          console.log(`Collection '${collectionName}' non trouvée ou vide`);
+          console.log(`Collection '${collName}' non trouvée`);
         }
       }
+    };
 
-      // Store the collection name for updates
-      if (usedCollection) {
-        (window as any).__rewardClaimsCollection = usedCollection;
+    setupListener();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
+    };
+  }, []);
 
-      setClaims(claimsData);
-
-      // Calculate stats
-      const newStats = {
-        pending: claimsData.filter((c) => c.status === 'pending').length,
-        approved: claimsData.filter((c) => c.status === 'approved').length,
-        rejected: claimsData.filter((c) => c.status === 'rejected').length,
-        in_preparation: claimsData.filter((c) => c.status === 'in_preparation').length,
-        shipped: claimsData.filter((c) => c.status === 'shipped').length,
-        delivered: claimsData.filter((c) => c.status === 'delivered').length,
-      };
-      setStats(newStats);
-    } catch (error) {
-      console.error('Error loading claims:', error);
-      notifications.show({
-        title: 'Erreur',
-        message: 'Impossible de charger les demandes',
-        color: 'red',
-      });
-    } finally {
-      
-    }
-  };
-
-  const filterClaims = () => {
-    if (statusFilter === 'all') {
-      setFilteredClaims(claims);
-    } else {
-      setFilteredClaims(claims.filter((claim) => claim.status === statusFilter));
-    }
-  };
-
-  const updateClaimStatus = async (
-    claimId: string,
-    newStatus: RewardClaim['status'],
-    trackingNumber?: string,
-    notes?: string
-  ) => {
+  const updateClaimStatus = async (claimId: string, newStatus: ClaimStatus, tracking?: string, notes?: string) => {
     try {
       const updateData: any = {
         status: newStatus,
-        updatedAt: new Date(),
+        updatedAt: Timestamp.now(),
       };
 
-      if (trackingNumber) {
-        updateData.trackingNumber = trackingNumber;
-      }
+      if (tracking) updateData.trackingNumber = tracking;
+      if (notes) updateData.adminNotes = notes;
 
-      if (notes) {
-        updateData.adminNotes = notes;
-      }
-
-      // Use the stored collection name
-      const collectionName = (window as any).__rewardClaimsCollection || 'reward-claims';
       await updateDoc(doc(db, collectionName, claimId), updateData);
 
       notifications.show({
         title: 'Succès',
-        message: 'Statut mis à jour avec succès',
+        message: 'Statut mis à jour',
         color: 'green',
       });
 
-      loadClaims();
       setModalOpened(false);
+      setSelectedClaim(null);
+      setTrackingNumber('');
+      setAdminNotes('');
     } catch (error) {
-      console.error('Error updating claim:', error);
+      console.error('Erreur:', error);
       notifications.show({
         title: 'Erreur',
-        message: 'Impossible de mettre à jour le statut',
+        message: 'Impossible de mettre à jour',
         color: 'red',
       });
     }
+  };
+
+  const openClaimModal = (claim: RewardClaim) => {
+    setSelectedClaim(claim);
+    setTrackingNumber(claim.trackingNumber || '');
+    setAdminNotes(claim.adminNotes || '');
+    setModalOpened(true);
+  };
+
+  const getClaimsByStatus = (status: ClaimStatus) => {
+    return claims.filter((c) => c.status === status);
+  };
+
+  const ClaimCard = ({ claim }: { claim: RewardClaim }) => {
+    return (
+      <Paper className="claim-card" p="md" withBorder>
+        <Stack gap="xs">
+          <Group justify="space-between">
+            <Text fw={700} size="sm">{claim.rewardTitle}</Text>
+            <Tooltip label="Voir détails">
+              <ActionIcon
+                variant="light"
+                size="sm"
+                onClick={() => openClaimModal(claim)}
+              >
+                <IconEye size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+
+          <Text size="xs" c="dimmed">
+            {claim.userPseudo} • {claim.pointsCost} pts
+          </Text>
+
+          {claim.personalInfo && (
+            <Text size="xs" c="dimmed">
+              {claim.personalInfo.ville} ({claim.personalInfo.codePostal})
+            </Text>
+          )}
+
+          {claim.trackingNumber && (
+            <Badge variant="light" size="xs">
+              📦 {claim.trackingNumber}
+            </Badge>
+          )}
+
+          <Group gap={4} mt="xs">
+            {claim.status === 'pending' && (
+              <>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="green"
+                  fullWidth
+                  onClick={() => updateClaimStatus(claim.id, 'approved')}
+                >
+                  ✓ Approuver
+                </Button>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="red"
+                  fullWidth
+                  onClick={() => {
+                    const reason = prompt('Raison du rejet:');
+                    if (reason) updateClaimStatus(claim.id, 'rejected', undefined, reason);
+                  }}
+                >
+                  ✗ Rejeter
+                </Button>
+              </>
+            )}
+
+            {claim.status === 'approved' && (
+              <Button
+                size="xs"
+                variant="light"
+                fullWidth
+                onClick={() => updateClaimStatus(claim.id, 'in_preparation')}
+              >
+                📦 Préparer
+              </Button>
+            )}
+
+            {claim.status === 'in_preparation' && (
+              <Button
+                size="xs"
+                variant="light"
+                fullWidth
+                onClick={() => openClaimModal(claim)}
+              >
+                🚚 Expédier
+              </Button>
+            )}
+
+            {claim.status === 'shipped' && (
+              <Button
+                size="xs"
+                variant="light"
+                color="green"
+                fullWidth
+                onClick={() => updateClaimStatus(claim.id, 'delivered')}
+              >
+                ✓ Livré
+              </Button>
+            )}
+          </Group>
+
+          <Text size="xs" c="dimmed">
+            {claim.createdAt?.toLocaleDateString('fr-FR')}
+          </Text>
+        </Stack>
+      </Paper>
+    );
   };
 
   return (
     <Stack gap="lg">
       <Group justify="space-between">
         <div>
-          <Title order={2}>Demandes de Récompenses</Title>
+          <Title order={2}>Gestion des envois</Title>
           <Text c="dimmed" size="sm" mt={4}>
-            Gérez les demandes de récompenses des utilisateurs
+            Workflow de traitement des récompenses
           </Text>
         </div>
+        <Badge size="lg" variant="dot" color="green">
+          Temps réel
+        </Badge>
       </Group>
 
-      <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }} spacing="md">
-        {Object.entries(statusConfig).map(([status, config]) => {
-          const Icon = config.icon;
-          return (
-            <Paper
-              key={status}
-              p="md"
-              withBorder
-              style={{ cursor: 'pointer' }}
-              onClick={() => setStatusFilter(statusFilter === status ? 'all' : status)}
-              bg={statusFilter === status ? 'gray.0' : undefined}
-            >
-              <Stack gap="xs" align="center">
-                <ThemeIcon size="lg" variant="light" color={config.color}>
-                  <Icon size={20} />
-                </ThemeIcon>
-                <Text fw={700} size="xl">
-                  {stats[status as keyof typeof stats]}
-                </Text>
-                <Text size="xs" c="dimmed" ta="center">
-                  {config.label}
-                </Text>
-              </Stack>
-            </Paper>
-          );
-        })}
-      </SimpleGrid>
+      <ScrollArea>
+        <div className="kanban-board">
+          {WORKFLOW_COLUMNS.map((column) => {
+            const Icon = column.icon;
+            const columnClaims = getClaimsByStatus(column.id as ClaimStatus);
 
-      <Group>
-        <Select
-          leftSection={<IconFilter size={16} />}
-          placeholder="Filtrer par statut"
-          value={statusFilter}
-          onChange={(value) => setStatusFilter(value || 'all')}
-          data={[
-            { value: 'all', label: 'Tous' },
-            ...Object.entries(statusConfig).map(([value, config]) => ({
-              value,
-              label: config.label,
-            })),
-          ]}
-          clearable
-        />
-        <Text size="sm" c="dimmed">
-          {filteredClaims.length} demande(s)
-        </Text>
-      </Group>
-
-      {filteredClaims.length === 0 ? (
-        <Paper p="xl" withBorder>
-          <Stack align="center" gap="md">
-            <IconHandGrab size={48} color="gray" />
-            <Text c="dimmed">Aucune demande à afficher</Text>
-          </Stack>
-        </Paper>
-      ) : (
-        <Stack gap="md">
-          {filteredClaims.map((claim) => {
-            const StatusIcon = statusConfig[claim.status].icon;
             return (
-              <Card
-                key={claim.id}
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                withBorder
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  setSelectedClaim(claim);
-                  setModalOpened(true);
-                }}
-              >
-                <Grid>
-                  <Grid.Col span={{ base: 12, md: 8 }}>
-                    <Stack gap="xs">
-                      <Group>
-                        <Text fw={700} size="lg">
-                          {claim.rewardTitle}
-                        </Text>
-                        <Badge
-                          color={statusConfig[claim.status].color}
-                          variant="light"
-                          leftSection={<StatusIcon size={12} />}
-                        >
-                          {statusConfig[claim.status].label}
-                        </Badge>
-                      </Group>
+              <div key={column.id} className="kanban-column">
+                <div className="column-header" style={{ borderColor: column.color }}>
+                  <Icon size={20} color={column.color} />
+                  <Text fw={700} size="sm">{column.title}</Text>
+                  <Badge size="sm" variant="filled" style={{ background: column.color }}>
+                    {columnClaims.length}
+                  </Badge>
+                </div>
 
-                      <Grid>
-                        <Grid.Col span={6}>
-                          <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                            Utilisateur
-                          </Text>
-                          <Text size="sm">{claim.userPseudo || 'N/A'}</Text>
-                          <Text size="xs" c="dimmed">
-                            {claim.userEmail}
-                          </Text>
-                        </Grid.Col>
-
-                        <Grid.Col span={6}>
-                          <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                            Coût
-                          </Text>
-                          <Text size="sm" fw={700} c="blue">
-                            {claim.pointsCost} points
-                          </Text>
-                        </Grid.Col>
-
-                        {claim.personalInfo && (
-                          <Grid.Col span={12}>
-                            <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                              Informations personnelles
-                            </Text>
-                            <Text size="sm">
-                              {claim.personalInfo.prenom} {claim.personalInfo.nom}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {claim.personalInfo.adresse}
-                              {claim.personalInfo.batiment && `, ${claim.personalInfo.batiment}`}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {claim.personalInfo.codePostal} {claim.personalInfo.ville}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              Tél: {claim.personalInfo.telephone}
-                            </Text>
-                            {claim.personalInfo.informationsComplementaires && (
-                              <Text size="xs" c="dimmed" mt={4}>
-                                Info complémentaires: {claim.personalInfo.informationsComplementaires}
-                              </Text>
-                            )}
-                          </Grid.Col>
-                        )}
-
-                        {claim.trackingNumber && (
-                          <Grid.Col span={6}>
-                            <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                              Numéro de suivi
-                            </Text>
-                            <Text size="sm" fw={500}>
-                              {claim.trackingNumber}
-                            </Text>
-                          </Grid.Col>
-                        )}
-                      </Grid>
-                    </Stack>
-                  </Grid.Col>
-
-                  <Grid.Col span={{ base: 12, md: 4 }}>
-                    <Stack gap="xs">
-                      <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                        Date de demande
+                <ScrollArea h={600} offsetScrollbars>
+                  <Stack gap="sm" p="sm">
+                    {columnClaims.length === 0 ? (
+                      <Text size="sm" c="dimmed" ta="center" py="xl">
+                        Aucune demande
                       </Text>
-                      <Text size="sm">
-                        {claim.createdAt?.toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Text>
-
-                      {claim.updatedAt && claim.updatedAt !== claim.createdAt && (
-                        <>
-                          <Text size="xs" c="dimmed" tt="uppercase" fw={700} mt="xs">
-                            Dernière mise à jour
-                          </Text>
-                          <Text size="sm">
-                            {claim.updatedAt?.toLocaleDateString('fr-FR', {
-                              day: '2-digit',
-                              month: 'long',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </Text>
-                        </>
-                      )}
-                    </Stack>
-                  </Grid.Col>
-                </Grid>
-
-                {claim.adminNotes && (
-                  <>
-                    <Divider mt="md" mb="xs" />
-                    <Paper p="xs" withBorder>
-                      <Text size="xs" fw={700} mb={4}>
-                        Notes admin:
-                      </Text>
-                      <Text size="sm" c="dimmed">
-                        {claim.adminNotes}
-                      </Text>
-                    </Paper>
-                  </>
-                )}
-
-                {claim.rewardDescription && (
-                  <>
-                    <Divider mt="md" mb="xs" />
-                    <Paper p="xs" withBorder bg="blue.0">
-                      <Text size="xs" fw={700} mb={4}>
-                        Description de la récompense:
-                      </Text>
-                      <Text size="sm">
-                        {claim.rewardDescription}
-                      </Text>
-                      {claim.rewardSubtitle && (
-                        <Text size="xs" c="dimmed" mt={4}>
-                          {claim.rewardSubtitle}
-                        </Text>
-                      )}
-                    </Paper>
-                  </>
-                )}
-              </Card>
+                    ) : (
+                      columnClaims.map((claim) => (
+                        <ClaimCard key={claim.id} claim={claim} />
+                      ))
+                    )}
+                  </Stack>
+                </ScrollArea>
+              </div>
             );
           })}
-        </Stack>
-      )}
+        </div>
+      </ScrollArea>
 
+      {/* Section rejetées et livrées */}
+      <Grid mt="xl">
+        <Grid.Col span={6}>
+          <Paper p="md" withBorder>
+            <Group mb="md">
+              <IconX size={20} color="red" />
+              <Text fw={700}>Rejetées</Text>
+              <Badge color="red">{getClaimsByStatus('rejected').length}</Badge>
+            </Group>
+            <Stack gap="xs">
+              {getClaimsByStatus('rejected').slice(0, 5).map((claim) => (
+                <Paper key={claim.id} p="xs" withBorder onClick={() => openClaimModal(claim)} style={{ cursor: 'pointer' }}>
+                  <Text size="sm">{claim.rewardTitle}</Text>
+                  <Text size="xs" c="dimmed">{claim.userPseudo}</Text>
+                </Paper>
+              ))}
+            </Stack>
+          </Paper>
+        </Grid.Col>
+
+        <Grid.Col span={6}>
+          <Paper p="md" withBorder>
+            <Group mb="md">
+              <IconCheck size={20} color="green" />
+              <Text fw={700}>Livrées</Text>
+              <Badge color="green">{getClaimsByStatus('delivered').length}</Badge>
+            </Group>
+            <Stack gap="xs">
+              {getClaimsByStatus('delivered').slice(0, 5).map((claim) => (
+                <Paper key={claim.id} p="xs" withBorder onClick={() => openClaimModal(claim)} style={{ cursor: 'pointer' }}>
+                  <Text size="sm">{claim.rewardTitle}</Text>
+                  <Text size="xs" c="dimmed">{claim.userPseudo}</Text>
+                </Paper>
+              ))}
+            </Stack>
+          </Paper>
+        </Grid.Col>
+      </Grid>
+
+      {/* Modal détails */}
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
-        title="Gérer la demande"
+        title="Détails de la demande"
         size="lg"
       >
         {selectedClaim && (
           <Stack gap="md">
             <Paper p="md" withBorder>
               <Stack gap="xs">
-                <Text fw={700} size="lg">
-                  {selectedClaim.rewardTitle}
-                </Text>
-                <Group>
-                  <Text size="sm" c="dimmed">
-                    Statut actuel:
-                  </Text>
-                  <Badge color={statusConfig[selectedClaim.status].color}>
-                    {statusConfig[selectedClaim.status].label}
-                  </Badge>
-                </Group>
-                {selectedClaim.rewardSubtitle && (
-                  <Text size="sm" c="dimmed">
-                    {selectedClaim.rewardSubtitle}
-                  </Text>
-                )}
+                <Text fw={700} size="lg">{selectedClaim.rewardTitle}</Text>
+                <Text size="sm" c="dimmed">{selectedClaim.rewardSubtitle}</Text>
+                <Badge>{selectedClaim.status}</Badge>
               </Stack>
+            </Paper>
+
+            <Paper p="md" withBorder>
+              <Text fw={700} mb="xs">Utilisateur</Text>
+              <Text size="sm">{selectedClaim.userPseudo}</Text>
+              <Text size="xs" c="dimmed">{selectedClaim.userEmail}</Text>
+              <Text size="xs" c="dimmed">Coût: {selectedClaim.pointsCost} points</Text>
             </Paper>
 
             {selectedClaim.personalInfo && (
               <Paper p="md" withBorder>
-                <Text size="sm" fw={700} mb="xs">
-                  Informations de livraison:
-                </Text>
+                <Text fw={700} mb="xs">Adresse de livraison</Text>
                 <Text size="sm">
                   {selectedClaim.personalInfo.prenom} {selectedClaim.personalInfo.nom}
                 </Text>
-                <Text size="xs" c="dimmed">
-                  {selectedClaim.personalInfo.adresse}
-                </Text>
-                <Text size="xs" c="dimmed">
+                <Text size="sm">{selectedClaim.personalInfo.adresse}</Text>
+                {selectedClaim.personalInfo.batiment && (
+                  <Text size="sm">{selectedClaim.personalInfo.batiment}</Text>
+                )}
+                <Text size="sm">
                   {selectedClaim.personalInfo.codePostal} {selectedClaim.personalInfo.ville}
                 </Text>
-                <Text size="xs" c="dimmed">
-                  Tél: {selectedClaim.personalInfo.telephone}
-                </Text>
+                <Text size="sm">Tél: {selectedClaim.personalInfo.telephone}</Text>
               </Paper>
             )}
 
-            <Divider label="Changer le statut" />
+            {selectedClaim.status === 'in_preparation' && (
+              <>
+                <TextInput
+                  label="Numéro de suivi"
+                  placeholder="Ex: FR123456789"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                />
+                <Textarea
+                  label="Notes (optionnel)"
+                  placeholder="Informations complémentaires..."
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  minRows={2}
+                />
+                <Button
+                  fullWidth
+                  onClick={() => updateClaimStatus(selectedClaim.id, 'shipped', trackingNumber, adminNotes)}
+                  disabled={!trackingNumber.trim()}
+                >
+                  Marquer comme expédiée
+                </Button>
+              </>
+            )}
 
-            <Group grow>
-              <Button
-                variant="light"
-                color="blue"
-                onClick={() => {
-                  const notes = prompt('Notes admin (optionnel):');
-                  updateClaimStatus(selectedClaim.id, 'approved', undefined, notes || undefined);
-                }}
-                disabled={selectedClaim.status === 'approved'}
-              >
-                Approuver
-              </Button>
-              <Button
-                variant="light"
-                color="red"
-                onClick={() => {
-                  const notes = prompt('Raison du rejet:');
-                  if (notes) {
-                    updateClaimStatus(selectedClaim.id, 'rejected', undefined, notes);
-                  }
-                }}
-                disabled={selectedClaim.status === 'rejected'}
-              >
-                Rejeter
-              </Button>
-            </Group>
-
-            <Group grow>
-              <Button
-                variant="light"
-                color="cyan"
-                onClick={() => updateClaimStatus(selectedClaim.id, 'in_preparation')}
-                disabled={selectedClaim.status === 'in_preparation'}
-              >
-                En préparation
-              </Button>
-              <Button
-                variant="light"
-                color="grape"
-                onClick={() => {
-                  const tracking = prompt('Numéro de suivi:');
-                  if (tracking) {
-                    updateClaimStatus(selectedClaim.id, 'shipped', tracking);
-                  }
-                }}
-                disabled={selectedClaim.status === 'shipped'}
-              >
-                Expédier
-              </Button>
-            </Group>
-
-            <Button
-              variant="light"
-              color="green"
-              fullWidth
-              onClick={() => updateClaimStatus(selectedClaim.id, 'delivered')}
-              disabled={selectedClaim.status === 'delivered'}
-            >
-              Marquer comme livrée
-            </Button>
+            {selectedClaim.adminNotes && (
+              <Paper p="md" withBorder bg="gray.0">
+                <Text fw={700} size="sm" mb="xs">Notes admin</Text>
+                <Text size="sm">{selectedClaim.adminNotes}</Text>
+              </Paper>
+            )}
           </Stack>
         )}
       </Modal>

@@ -8,14 +8,14 @@
 .kanban-column {
   min-width: 320px;
   max-width: 320px;
-  background: #f8f9fa;
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
   border-radius: 12px;
   overflow: hidden;
 }
 
 .column-header {
   padding: 16px;
-  background: white;
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
   border-bottom: 3px solid;
   display: flex;
   align-items: center;
@@ -28,10 +28,9 @@
 .claim-card {
   transition: all 0.2s ease;
   cursor: pointer;
-  background: white;
 }
 
 .claim-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
 }

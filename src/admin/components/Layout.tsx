@@ -25,6 +25,8 @@ import {
   IconLogout,
   IconMoon,
   IconSun,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -34,7 +36,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [opened, { toggle }] = useDisclosure();
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
+  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,16 +61,30 @@ export function Layout({ children }: LayoutProps) {
     <AppShell
       header={{ height: 70 }}
       navbar={{
-        width: 280,
+        width: desktopOpened ? 280 : 80,
         breakpoint: 'sm',
-        collapsed: { mobile: !opened },
+        collapsed: { mobile: !mobileOpened, desktop: false },
       }}
       padding="md"
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
+            <Tooltip label={desktopOpened ? 'Réduire la sidebar' : 'Étendre la sidebar'}>
+              <ActionIcon
+                onClick={toggleDesktop}
+                variant="subtle"
+                size="lg"
+                visibleFrom="sm"
+              >
+                {desktopOpened ? (
+                  <IconLayoutSidebarLeftCollapse size={20} />
+                ) : (
+                  <IconLayoutSidebarLeftExpand size={20} />
+                )}
+              </ActionIcon>
+            </Tooltip>
             <Group gap="xs">
               <IconCar size={32} color="#667eea" stroke={2} />
               <Text size="xl" fw={700} c="#667eea">
@@ -127,18 +144,29 @@ export function Layout({ children }: LayoutProps) {
       <AppShell.Navbar p="md">
         <AppShell.Section grow>
           {menuItems.map((item) => (
-            <NavLink
+            <Tooltip
               key={item.path}
               label={item.label}
-              leftSection={<item.icon size={20} stroke={1.5} />}
-              active={location.pathname === item.path}
-              onClick={() => {
-                navigate(item.path);
-                toggle();
-              }}
-              variant="subtle"
-              style={{ borderRadius: rem(8), marginBottom: rem(5) }}
-            />
+              position="right"
+              disabled={desktopOpened}
+              withArrow
+            >
+              <NavLink
+                label={desktopOpened ? item.label : ''}
+                leftSection={<item.icon size={20} stroke={1.5} />}
+                active={location.pathname === item.path}
+                onClick={() => {
+                  navigate(item.path);
+                  toggleMobile();
+                }}
+                variant="subtle"
+                style={{
+                  borderRadius: rem(8),
+                  marginBottom: rem(5),
+                  justifyContent: desktopOpened ? 'flex-start' : 'center',
+                }}
+              />
+            </Tooltip>
           ))}
         </AppShell.Section>
       </AppShell.Navbar>

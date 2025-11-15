@@ -6,10 +6,10 @@ export function Download() {
       <div className="download-container">
         <div className="download-content">
           <span className="download-emoji">🚀</span>
-          <h2 className="download-title">Prêt à transformer<br />votre temps en essence ?</h2>
+          <h2 className="download-title">Réduisez vos dépenses<br />d'essence dès aujourd'hui</h2>
           <p className="download-text">
-            Téléchargez Vago gratuitement et commencez à gagner des Miles dès aujourd'hui.
-            Votre premier plein d'essence gratuit vous attend !
+            Téléchargez Vago gratuitement et commencez à économiser sur votre carburant.
+            On vous aide à alléger votre budget avec de vraies récompenses !
           </p>
 
           <div className="download-buttons">

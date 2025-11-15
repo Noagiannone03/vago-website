@@ -5,10 +5,10 @@ export function Problem() {
     <section className="section problem-section">
       <div className="problem-header">
         <span className="problem-emoji">😰</span>
-        <h2 className="section-title">Le prix de l'essence,<br />une vraie galère</h2>
+        <h2 className="section-title">Votre budget essence<br />vous pèse ?</h2>
         <p className="section-subtitle">
-          Pour des millions de Français, faire le plein est devenu un véritable casse-tête.
-          Le budget automobile représente une part importante et incompressible du budget familial.
+          Pour des millions de Français, payer l'essence chaque semaine devient un vrai problème.
+          On comprend, c'est pour ça qu'on a créé Vago : pour vous aider.
         </p>
       </div>
 

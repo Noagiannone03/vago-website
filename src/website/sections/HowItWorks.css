@@ -1,10 +1,23 @@
 .how-it-works-section {
-  background: var(--vago-gray);
+  background: var(--vago-white);
+  position: relative;
+}
+
+.how-it-works-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(96, 213, 255, 0.05) 0%, rgba(43, 185, 245, 0.05) 100%);
+  pointer-events: none;
 }
 
 .how-header {
   text-align: center;
   margin-bottom: 4rem;
+  position: relative;
 }
 
 .how-emoji {
@@ -31,8 +44,8 @@
   top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--vago-blue);
-  border: 4px solid var(--vago-black);
+  background: linear-gradient(135deg, var(--vago-blue) 0%, var(--vago-blue-dark) 100%);
+  border: none;
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -40,8 +53,9 @@
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  font-weight: 900;
-  color: var(--vago-black);
+  font-weight: 700;
+  color: var(--vago-white);
+  box-shadow: 0 4px 12px rgba(43, 185, 245, 0.3);
 }
 
 .how-card-icon {
@@ -51,40 +65,44 @@
 
 .how-card-title {
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--vago-black);
   margin-bottom: 1rem;
 }
 
 .how-card-text {
   font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
+  color: var(--vago-gray);
+  line-height: 1.7;
 }
 
 .how-footer {
   max-width: 700px;
   margin: 3rem auto 0;
+  position: relative;
 }
 
 .how-footer-content {
-  background: var(--vago-blue);
+  background: linear-gradient(135deg, var(--vago-blue-light) 0%, var(--vago-blue) 100%);
   text-align: center;
   padding: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .how-footer-content h3 {
   font-size: 1.8rem;
-  font-weight: 900;
-  color: var(--vago-black);
+  font-weight: 700;
+  color: var(--vago-white);
   margin-bottom: 1rem;
 }
 
 .how-footer-content p {
   font-size: 1.1rem;
-  color: var(--vago-black);
-  line-height: 1.6;
+  color: var(--vago-white);
+  line-height: 1.7;
   margin: 0;
+  opacity: 0.95;
 }
 
 @media (max-width: 768px) {

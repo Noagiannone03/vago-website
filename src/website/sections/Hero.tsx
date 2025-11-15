@@ -15,18 +15,18 @@ export function Hero() {
 
       <div className="hero-content">
         <div className="hero-badge">
-          <span>✨ Le jeu qui paie votre essence</span>
+          <span>✨ On vous aide à payer votre essence</span>
         </div>
 
         <h1 className="hero-title">
-          Transformez votre<br />
-          <span className="hero-title-highlight">temps de jeu</span><br />
-          en pouvoir d'achat
+          Économisez sur<br />
+          <span className="hero-title-highlight">votre essence</span><br />
+          en jouant
         </h1>
 
         <p className="hero-description">
-          Vago est la première application de simulation de conduite qui vous permet
-          de gagner de vraies récompenses en jouant. Votre essence, payée en s'amusant.
+          Vago vous aide à réduire vos dépenses d'essence grâce à un jeu de simulation.
+          Gagnez de vraies récompenses pour alléger votre budget carburant.
         </p>
 
         <div className="hero-cta">
@@ -40,6 +40,13 @@ export function Hero() {
 
         <div className="hero-stats">
           <div className="stat-item">
+            <div className="stat-icon">⛽</div>
+            <div className="stat-content">
+              <div className="stat-number">Pleins</div>
+              <div className="stat-label">d'essence gratuits</div>
+            </div>
+          </div>
+          <div className="stat-item">
             <div className="stat-icon">🎮</div>
             <div className="stat-content">
               <div className="stat-number">100%</div>
@@ -47,17 +54,10 @@ export function Hero() {
             </div>
           </div>
           <div className="stat-item">
-            <div className="stat-icon">⛽</div>
+            <div className="stat-icon">💰</div>
             <div className="stat-content">
-              <div className="stat-number">€€€</div>
-              <div className="stat-label">Vraies économies</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">🎯</div>
-            <div className="stat-content">
-              <div className="stat-number">Simple</div>
-              <div className="stat-label">Facile à utiliser</div>
+              <div className="stat-number">Vraies</div>
+              <div className="stat-label">économies</div>
             </div>
           </div>
         </div>

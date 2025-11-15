@@ -5,10 +5,10 @@ export function Solution() {
     <section className="section solution-section">
       <div className="solution-header">
         <span className="solution-emoji">💡</span>
-        <h2 className="section-title">La solution Vago</h2>
+        <h2 className="section-title">On vous aide à économiser</h2>
         <p className="section-subtitle">
-          Et si on transformait le temps que vous passez déjà sur votre téléphone
-          en pouvoir d'achat réel ? Vago est le premier jeu qui paie vraiment votre essence.
+          Avec Vago, réduisez vos dépenses d'essence grâce à un jeu simple.
+          On transforme votre temps de jeu en vraies économies pour alléger votre budget.
         </p>
       </div>
 

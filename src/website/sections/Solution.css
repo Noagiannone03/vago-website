@@ -41,56 +41,61 @@
 .feature-icon {
   font-size: 3rem;
   flex-shrink: 0;
-  background: var(--vago-blue);
-  border: 4px solid var(--vago-black);
+  background: linear-gradient(135deg, var(--vago-blue-light) 0%, var(--vago-blue) 100%);
+  border: none;
   border-radius: 16px;
   width: 80px;
   height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(43, 185, 245, 0.25);
 }
 
 .feature-item:hover .feature-icon {
-  transform: rotate(-5deg) scale(1.1);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(43, 185, 245, 0.35);
 }
 
 .feature-content {
   flex: 1;
+  padding-top: 0.5rem;
 }
 
 .feature-title {
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--vago-black);
   margin-bottom: 0.5rem;
 }
 
 .feature-text {
   font-size: 1.1rem;
-  color: #666;
-  line-height: 1.6;
+  color: var(--vago-gray);
+  line-height: 1.7;
 }
 
 .solution-box {
   position: sticky;
   top: 100px;
-  background: var(--vago-gray);
+  background: var(--vago-gray-light);
+  border: 1px solid rgba(43, 185, 245, 0.15);
 }
 
 .solution-box-header {
-  background: var(--vago-blue);
-  border-bottom: 4px solid var(--vago-black);
+  background: linear-gradient(135deg, var(--vago-blue) 0%, var(--vago-blue-dark) 100%);
+  border-bottom: none;
   padding: 1.5rem;
   margin: -2rem -2rem 2rem -2rem;
   border-radius: 20px 20px 0 0;
+  box-shadow: 0 4px 16px rgba(43, 185, 245, 0.2);
 }
 
 .solution-box-header h3 {
   font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--vago-black);
+  font-weight: 700;
+  color: var(--vago-white);
   text-align: center;
 }
 
@@ -102,18 +107,24 @@
 
 .example-step {
   background: var(--vago-white);
-  border: 3px solid var(--vago-black);
+  border: 1px solid rgba(43, 185, 245, 0.2);
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.example-step:hover {
+  border-color: rgba(43, 185, 245, 0.4);
+  box-shadow: 0 4px 12px rgba(43, 185, 245, 0.15);
 }
 
 .step-number {
-  background: var(--vago-blue);
-  color: var(--vago-black);
-  font-weight: 900;
+  background: linear-gradient(135deg, var(--vago-blue-light) 0%, var(--vago-blue) 100%);
+  color: var(--vago-white);
+  font-weight: 700;
   font-size: 1.25rem;
   width: 40px;
   height: 40px;
@@ -121,26 +132,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--vago-black);
+  border: none;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(43, 185, 245, 0.3);
 }
 
 .example-step p {
   margin: 0;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--vago-black);
 }
 
 .example-arrow {
   text-align: center;
   font-size: 2rem;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--vago-blue);
 }
 
 .reward-step {
-  background: var(--vago-blue);
+  background: linear-gradient(135deg, var(--vago-blue-light) 0%, var(--vago-blue) 100%);
+  border-color: transparent;
+}
+
+.reward-step p {
+  color: var(--vago-white);
 }
 
 .reward-icon {

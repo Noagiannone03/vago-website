@@ -3,85 +3,57 @@ import './Hero.css';
 export function Hero() {
   return (
     <section className="hero">
-      <nav className="hero-nav">
-        <div className="nav-container">
-          <div className="logo">
-            <span className="logo-icon">🚗</span>
-            <span className="logo-text">VAGO</span>
-          </div>
-          <a href="/admin" className="btn-nav">Admin</a>
+      <nav className="nav">
+        <div className="nav-content">
+          <div className="logo">VAGO</div>
+          <a href="/admin" className="nav-link">Admin</a>
         </div>
       </nav>
 
-      <div className="hero-content">
-        <div className="hero-badge">
-          <span>✨ Le jeu qui paie votre essence</span>
-        </div>
+      <div className="hero-container">
+        <div className="hero-content">
+          <h1 className="hero-title">
+            Jouez.<br />
+            Gagnez.<br />
+            <span className="highlight">Roulez gratuit.</span>
+          </h1>
 
-        <h1 className="hero-title">
-          Transformez votre<br />
-          <span className="hero-title-highlight">temps de jeu</span><br />
-          en pouvoir d'achat
-        </h1>
+          <p className="hero-description">
+            La première app qui transforme votre temps de jeu en pleins d'essence gratuits.
+          </p>
 
-        <p className="hero-description">
-          Vago est la première application de simulation de conduite qui vous permet
-          de gagner de vraies récompenses en jouant. Votre essence, payée en s'amusant.
-        </p>
-
-        <div className="hero-cta">
-          <a href="#download" className="btn btn-primary btn-large">
-            Télécharger l'app
-          </a>
-          <a href="#how-it-works" className="btn btn-secondary btn-large">
-            Comment ça marche
-          </a>
-        </div>
-
-        <div className="hero-stats">
-          <div className="stat-item">
-            <div className="stat-icon">🎮</div>
-            <div className="stat-content">
-              <div className="stat-number">100%</div>
-              <div className="stat-label">Gratuit</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">⛽</div>
-            <div className="stat-content">
-              <div className="stat-number">€€€</div>
-              <div className="stat-label">Vraies économies</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">🎯</div>
-            <div className="stat-content">
-              <div className="stat-number">Simple</div>
-              <div className="stat-label">Facile à utiliser</div>
-            </div>
+          <div className="hero-cta">
+            <a href="#download" className="btn btn-primary btn-large">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger
+            </a>
           </div>
         </div>
-      </div>
 
-      <div className="hero-image">
-        <div className="phone-mockup">
-          <div className="phone-screen">
-            <div className="game-demo">
-              <div className="demo-header">
-                <span>🚚 Livraison Express</span>
-                <span className="demo-miles">+450 Miles</span>
-              </div>
-              <div className="demo-progress">
-                <div className="progress-bar"></div>
-              </div>
-              <div className="demo-gauges">
-                <div className="gauge">
-                  <span>⛽ Carburant</span>
-                  <div className="gauge-bar"></div>
+        <div className="hero-visual">
+          <div className="phone-frame">
+            <div className="phone-screen">
+              <div className="game-ui">
+                <div className="ui-header">
+                  <span className="ui-title">Livraison Express</span>
+                  <span className="ui-miles">+450</span>
                 </div>
-                <div className="gauge">
-                  <span>⚡ Énergie</span>
-                  <div className="gauge-bar"></div>
+                <div className="ui-progress">
+                  <div className="progress"></div>
+                </div>
+                <div className="ui-stats">
+                  <div className="stat">
+                    <div className="stat-label">Carburant</div>
+                    <div className="stat-bar"><div className="bar" style={{width: '75%'}}></div></div>
+                  </div>
+                  <div className="stat">
+                    <div className="stat-label">Énergie</div>
+                    <div className="stat-bar"><div className="bar" style={{width: '60%'}}></div></div>
+                  </div>
                 </div>
               </div>
             </div>

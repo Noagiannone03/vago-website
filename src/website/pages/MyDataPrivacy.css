@@ -1,0 +1,290 @@
+.data-privacy-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+}
+
+.privacy-nav {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 0;
+}
+
+.privacy-nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.privacy-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo-icon {
+  font-size: 1.75rem;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #000;
+}
+
+.privacy-container {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  width: 100%;
+}
+
+.privacy-content {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 1rem;
+}
+
+.privacy-subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+}
+
+.privacy-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.privacy-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-input,
+.form-select {
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #2BB9F5;
+  box-shadow: 0 0 0 3px rgba(43, 185, 245, 0.1);
+}
+
+.form-info {
+  background: #f5f5f5;
+  border-left: 4px solid #2BB9F5;
+  padding: 1rem 1.25rem;
+  border-radius: 4px;
+}
+
+.form-info p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.form-submit {
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: white;
+  background: #2BB9F5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.form-submit:hover:not(:disabled) {
+  background: #1B8FD6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(43, 185, 245, 0.3);
+}
+
+.form-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.privacy-legal {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 2rem;
+}
+
+.privacy-legal h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 1rem;
+}
+
+.privacy-legal ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.privacy-legal li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.privacy-legal li:last-child {
+  border-bottom: none;
+}
+
+.privacy-legal strong {
+  color: #2BB9F5;
+}
+
+.legal-notice {
+  background: #f9f9f9;
+  padding: 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.legal-notice a {
+  color: #2BB9F5;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.legal-notice a:hover {
+  text-decoration: underline;
+}
+
+.success-message {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.success-message h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 1rem;
+}
+
+.success-message p {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.success-message strong {
+  color: #2BB9F5;
+}
+
+.back-button {
+  margin-top: 2rem;
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: #2BB9F5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background: #1B8FD6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(43, 185, 245, 0.3);
+}
+
+.privacy-footer {
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 2rem;
+  text-align: center;
+}
+
+.privacy-footer p {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.footer-links a {
+  color: #2BB9F5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .privacy-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .privacy-title {
+    font-size: 2rem;
+  }
+
+  .privacy-container {
+    padding: 2rem 1rem;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
